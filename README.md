@@ -8,6 +8,8 @@ ZIP reinziehen → installieren → fertig.
 
 Kein Setup. Kein Bullshit.
 
+
+![Preview](assets/preview.gif)
 ---
 
 ## 🔥 FEATURES
