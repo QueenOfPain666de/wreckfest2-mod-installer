@@ -121,12 +121,80 @@ function listZipContents(zipPath) {
   }
 }
 
-function extractZip(zipPath, destDir, callback) {
+// Extract ZIP into destDir.
+// Finds the "data/" segment anywhere in the path and strips everything before+including it.
+// e.g. Sandford/data/art/foo.dds → art/foo.dds → destDir/art/foo.dds
+function extractZip(zipPath, destDir, overwriteAll, callback) {
   fs.mkdirSync(destDir, { recursive: true });
-  const cmd = process.platform === 'win32'
-    ? `powershell -command "Expand-Archive -Path '${zipPath}' -DestinationPath '${destDir}' -Force"`
-    : `unzip -o "${zipPath}" -d "${destDir}"`;
-  exec(cmd, { maxBuffer: 50 * 1024 * 1024 }, (err, stdout, stderr) => callback(err, stdout, stderr));
+
+  const tmpScript = path.join(os.tmpdir(), `wf2x_${Date.now()}.ps1`);
+  const overwriteFlag = overwriteAll ? '$true' : '$false';
+
+  const script = `
+Add-Type -Assembly System.IO.Compression.FileSystem
+$zip     = [System.IO.Compression.ZipFile]::OpenRead(${JSON.stringify(zipPath)})
+$dest    = ${JSON.stringify(destDir)}
+$owAll   = ${overwriteFlag}
+$copied  = 0; $skipped = 0; $overwritten = 0; $conflicts = @()
+
+foreach ($entry in $zip.Entries) {
+  # skip directory entries
+  if ($entry.FullName.EndsWith('/') -or $entry.FullName.EndsWith('\\')) { continue }
+
+  # normalise to backslashes
+  $rel = $entry.FullName -replace '/', '\\'
+
+  # Find "data\" anywhere in path and take everything after it
+  $idx = $rel.ToLower().IndexOf('data\')
+  if ($idx -lt 0) { continue }  # no data\ found, skip
+  $rel = $rel.Substring($idx + 5)  # 5 = length of "data\"
+  if ($rel -eq '') { continue }  # was just the data folder itself
+
+  $out = Join-Path $dest $rel
+  $dir = Split-Path $out -Parent
+  if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Force -Path $dir | Out-Null }
+
+  if (Test-Path $out) {
+    if ($owAll) {
+      [System.IO.Compression.ZipFileExtensions]::ExtractToFile($entry, $out, $true)
+      $overwritten++
+    } else {
+      $conflicts += $rel
+      $skipped++
+    }
+  } else {
+    [System.IO.Compression.ZipFileExtensions]::ExtractToFile($entry, $out, $false)
+    $copied++
+  }
+}
+$zip.Dispose()
+
+Write-Host "RESULT:copied=$copied,skipped=$skipped,overwritten=$overwritten"
+if ($conflicts.Count -gt 0) {
+  Write-Host "CONFLICTS:$($conflicts -join '|')"
+}
+`.trimStart();
+
+  fs.writeFileSync(tmpScript, script, 'utf8');
+
+  exec(
+    `powershell -NoProfile -ExecutionPolicy Bypass -File "${tmpScript}"`,
+    { maxBuffer: 100 * 1024 * 1024 },
+    (err, stdout, stderr) => {
+      try { fs.unlinkSync(tmpScript); } catch {}
+      if (err) { callback(err, null); return; }
+
+      const resultLine = (stdout.match(/RESULT:(.+)/) || [])[1] || '';
+      const conflictLine = (stdout.match(/CONFLICTS:(.+)/) || [])[1] || '';
+      const result = {};
+      resultLine.split(',').forEach(p => {
+        const [k, v] = p.split('=');
+        if (k) result[k] = parseInt(v) || 0;
+      });
+      result.conflicts = conflictLine ? conflictLine.split('|').filter(Boolean) : [];
+      callback(null, result);
+    }
+  );
 }
 
 let backendServer = null;
@@ -183,15 +251,32 @@ function startBackend() {
       req.on('data', d => body += d);
       req.on('end', () => {
         try {
-          const { zipPath, destBase } = JSON.parse(body);
+          const { zipPath, destBase, overwriteAll = false } = JSON.parse(body);
           const destDir = path.join(destBase, 'Wreckfest 2', 'data');
-          extractZip(zipPath, destDir, (err, stdout) => {
+          extractZip(zipPath, destDir, overwriteAll, (err, result) => {
             if (err) {
               res.writeHead(500, { 'Content-Type': 'application/json' });
               res.end(JSON.stringify({ error: err.message }));
+            } else if (!overwriteAll && result.conflicts && result.conflicts.length > 0) {
+              // Conflicts found — ask frontend what to do
+              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({
+                needsConfirm: true,
+                conflicts: result.conflicts,
+                copied: result.copied,
+                modName: path.basename(zipPath, '.zip'),
+                destDir
+              }));
             } else {
               res.writeHead(200, { 'Content-Type': 'application/json' });
-              res.end(JSON.stringify({ success: true, modName: path.basename(zipPath, '.zip'), destDir }));
+              res.end(JSON.stringify({
+                success: true,
+                modName: path.basename(zipPath, '.zip'),
+                destDir,
+                copied: result.copied,
+                overwritten: result.overwritten,
+                skipped: result.skipped
+              }));
             }
           });
         } catch (e) {

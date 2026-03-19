@@ -1234,8 +1234,17 @@ function installFromModal(){
   doInstall();
 }
 
+async function installOne(zp, dest, overwriteAll) {
+  const name = zp.split(/[\\/]/).pop();
+  const r = await fetch(`${API}/install`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ zipPath: zp, destBase: dest, overwriteAll })
+  });
+  return { name, data: await r.json() };
+}
+
 async function doInstall(){
-  
   if(!selected.size) return;
   const dest=document.getElementById('destDir').value.trim();
   if(!dest){toast('ZIEL-PFAD FEHLT');return;}
@@ -1244,26 +1253,94 @@ async function doInstall(){
   pa.classList.add('on'); document.getElementById('btnInstall').disabled=true;
   log(`Installation: ${zips.length} Mod(s) → /data/`,'info');
   let done=0;
+
   for(const zp of zips){
     const name=zp.split(/[\\/]/).pop();
-    pl.textContent=`INSTALLIERE: ${name}`;
-    log(`Extrahiere ${name}...`,'info');
+    pl.textContent=`PRÜFE: ${name}`;
+    log(`Starte ${name}...`,'info');
     try{
-      const r=await fetch(`${API}/install`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({zipPath:zp,destBase:dest})});
-      const d=await r.json();
-      if(d.success){done++;log(`✓ ${d.modName} → ${d.destDir}`,'ok');}
-      else log(`✗ ${name}: ${d.error}`,'err');
-    }catch(e){log(`✗ ${name}: Verbindungsfehler`,'err');}
+      // First pass — no overwrite, detect conflicts
+      let res = await installOne(zp, dest, false);
+
+      if(res.data.needsConfirm){
+        // Show conflict dialog, wait for user decision
+        const choice = await showConflictDialog(res.data.modName, res.data.conflicts, res.data.copied);
+        if(choice === 'overwrite'){
+          pl.textContent=`ÜBERSCHREIBE: ${name}`;
+          log(`Überschreibe ${res.data.conflicts.length} Datei(en)...`,'warn');
+          res = await installOne(zp, dest, true);
+        } else if(choice === 'skip'){
+          log(`↷ ${res.data.modName} — ${res.data.copied} neue Dateien kopiert, ${res.data.conflicts.length} übersprungen`,'warn');
+          done++; pb.style.width=((done/zips.length)*100)+'%'; continue;
+        } else {
+          // cancel this mod
+          log(`✗ ${res.data.modName} — abgebrochen`,'err');
+          pb.style.width=((done/zips.length)*100)+'%'; continue;
+        }
+      }
+
+      if(res.data.success){
+        done++;
+        log(`✓ ${res.data.modName} — ${res.data.copied} kopiert, ${res.data.overwritten||0} überschrieben`,'ok');
+      } else {
+        log(`✗ ${name}: ${res.data.error||'Unbekannter Fehler'}`,'err');
+      }
+    }catch(e){ log(`✗ ${name}: Verbindungsfehler`,'err'); }
     pb.style.width=((done/zips.length)*100)+'%';
   }
+
   pl.textContent=`FERTIG — ${done}/${zips.length}`;
   log(`─── Abgeschlossen: ${done}/${zips.length} ───`,done===zips.length?'ok':'warn');
   toast(done===zips.length?'ALLE MODS INSTALLIERT!':done+'/'+zips.length+' OK',done===zips.length?'ok':'');
   document.getElementById('btnInstall').disabled=false;
 }
 
-log('Bereit. Backend starten: node server.js','info');
+// Returns a Promise that resolves to 'overwrite' | 'skip' | 'cancel'
+function showConflictDialog(modName, conflicts, newFiles) {
+  return new Promise(resolve => {
+    document.getElementById('cfModName').textContent = modName;
+    document.getElementById('cfNewCount').textContent = newFiles;
+    document.getElementById('cfConflictCount').textContent = conflicts.length;
+    const list = document.getElementById('cfList');
+    list.innerHTML = conflicts.slice(0,20).map(f =>
+      `<div class="cf-file">${f}</div>`
+    ).join('') + (conflicts.length>20 ? `<div class="cf-file" style="opacity:.4">... und ${conflicts.length-20} weitere</div>` : '');
+    document.getElementById('cfOverlay').style.display = 'flex';
+    window._cfResolve = resolve;
+  });
+}
+
+window.cfChoose = function(choice) {
+  document.getElementById('cfOverlay').style.display = 'none';
+  if(window._cfResolve) { window._cfResolve(choice); window._cfResolve = null; }
+};
+
+log('Bereit.','info');
 </script>
+<!-- CONFLICT DIALOG -->
+<div id="cfOverlay" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.85);backdrop-filter:blur(4px);align-items:center;justify-content:center;display:none">
+  <div style="background:rgba(4,0,14,.97);border:1px solid rgba(200,0,255,.4);border-top:2px solid #ffcc00;border-radius:3px;padding:24px;width:min(540px,92vw);box-shadow:0 0 50px rgba(200,0,255,.2)">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:4px;color:#ffcc00;margin-bottom:4px">⚠ DATEIKONFLIKTE</div>
+    <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:rgba(220,200,255,.6);margin-bottom:14px;letter-spacing:1px">
+      MOD: <span id="cfModName" style="color:#00eeff"></span>
+    </div>
+    <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:rgba(200,180,255,.6);margin-bottom:10px;line-height:1.8">
+      <span id="cfNewCount" style="color:#39ff14"></span> neue Dateien werden kopiert.<br>
+      <span id="cfConflictCount" style="color:#ffcc00"></span> Datei(en) existieren bereits:
+    </div>
+    <div id="cfList" style="background:rgba(0,0,0,.5);border:1px solid rgba(255,200,0,.15);border-radius:2px;padding:8px 12px;max-height:140px;overflow-y:auto;margin-bottom:16px;font-family:'Share Tech Mono',monospace;font-size:10px"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button onclick="cfChoose('cancel')" style="background:none;border:1px solid rgba(200,0,255,.3);color:rgba(200,160,255,.6);font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:2px;padding:8px 16px;border-radius:2px;cursor:pointer">ABBRECHEN</button>
+      <button onclick="cfChoose('skip')" style="background:rgba(0,200,255,.08);border:1px solid rgba(0,200,255,.3);color:#00eeff;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:2px;padding:8px 16px;border-radius:2px;cursor:pointer">NUR NEUE KOPIEREN</button>
+      <button onclick="cfChoose('overwrite')" style="background:rgba(255,200,0,.1);border:1px solid rgba(255,200,0,.4);color:#ffcc00;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:3px;padding:8px 20px;border-radius:2px;cursor:pointer">ALLE ÜBERSCHREIBEN</button>
+    </div>
+  </div>
+</div>
+<style>
+#cfOverlay.open { display:flex !important; }
+.cf-file { color:rgba(255,200,100,.55);padding:2px 0;border-bottom:1px solid rgba(255,255,255,.04); }
+</style>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </body>
 </html>
