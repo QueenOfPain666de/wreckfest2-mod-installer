@@ -2,14 +2,14 @@
 
 ### by QueenOfPain666 // ROTA
 
+![Preview](assets/preview.gif)
+
 Portable Mod Installer für Wreckfest 2.
 
 ZIP reinziehen → installieren → fertig.
 
 Kein Setup. Kein Bullshit.
 
-
-![Preview](assets/preview.gif)
 ---
 
 ## 🔥 FEATURES
