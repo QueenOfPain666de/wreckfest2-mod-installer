@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WRECKFEST 2 — MOD INSTALLER</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;700;900&display=swap');
+
+:root {
+  --acc1: #ff0088;      /* magenta — dominant streak color */
+  --acc2: #cc00ff;      /* purple — secondary glow */
+  --acc3: #00eeff;      /* cyan — left beam */
+  --acc4: #ff6622;      /* orange ember — jacket highlights */
+  --text: #f8eeff;      /* near-white, slight violet tint */
+  --muted: rgba(220,180,255,.45);
+  --panel-bg: rgba(4,0,12,.78);
+  --panel-border: rgba(200,0,255,.22);
+  --panel-top: rgba(0,220,255,.55);
+  --dark: #02000a;
+  --cyan: #00eeff;
+  --fire1: #ff0088;
+  --fire2: #cc00ff;
+  --fire3: #00eeff;
+  --fire4: #ffaaff;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+html, body {
+  width:100%; height:100vh;
+  max-height:100vh;
+  background: #02000a url('bg.jpg') center top / cover no-repeat fixed;
+  color: var(--text);
+  font-family: 'Share Tech Mono', monospace;
+  overflow: hidden;
+  cursor: crosshair;
+}
+
+/* dark overlay so UI stays readable over the photo */
+body::before {
+  content:'';
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:
+    linear-gradient(180deg, rgba(4,0,12,.55) 0%, rgba(8,0,20,.3) 40%, rgba(4,0,12,.65) 100%),
+    radial-gradient(ellipse 70% 60% at 50% 40%, transparent 30%, rgba(0,0,8,.45) 100%);
+}
+
+/* ── PARTICLE CANVAS (replaces bgCanvas) ── */
+#bgCanvas {
+  position: fixed; inset:0; z-index:1;
+  width:100%; height:100%;
+  pointer-events:none;
+}
+
+/* ── GRAIN OVERLAY ── */
+.grain {
+  position: fixed; inset:0; z-index:1; pointer-events:none;
+  opacity:.045;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+  animation: grainShift 0.08s steps(1) infinite;
+}
+@keyframes grainShift {
+  0%{background-position:0 0} 10%{background-position:-30px 15px}
+  20%{background-position:10px -25px} 30%{background-position:-15px 30px}
+  40%{background-position:25px 5px} 50%{background-position:-5px -20px}
+  60%{background-position:20px 25px} 70%{background-position:-25px -5px}
+  80%{background-position:15px 20px} 90%{background-position:-10px -15px}
+  100%{background-position:0 0}
+}
+
+/* ── SCANLINES ── */
+.scanlines {
+  position: fixed; inset:0; z-index:2; pointer-events:none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px, transparent 3px,
+    rgba(0,0,0,0.18) 3px, rgba(0,0,0,0.18) 4px
+  );
+}
+
+/* ── VIGNETTE ── */
+.vignette {
+  position: fixed; inset:0; z-index:2; pointer-events:none;
+  background: radial-gradient(ellipse 85% 85% at 50% 50%, transparent 40%, rgba(0,0,0,0.75) 100%);
+}
+
+/* ── APP WRAPPER ── */
+#app {
+  position: relative; z-index:10;
+  max-width: 1000px; margin: 0 auto;
+  padding: 0 20px 8px;
+  height: calc(100vh - 32px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── HEADER ── */
+header {
+  padding: 12px 0 4px;
+  text-align: center;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.pre-title {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px; letter-spacing: 8px;
+  color: var(--cyan); opacity:.7;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  animation: flickerIn 0.5s steps(1) 0.2s both;
+}
+
+h1 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(42px, 7vw, 72px);
+  letter-spacing: 6px;
+  line-height: .88;
+  position: relative;
+  display: inline-block;
+}
+
+.h1-shadow {
+  position: absolute; inset:0;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: inherit; letter-spacing:inherit; line-height:inherit;
+  color: var(--pink);
+  transform: translate(4px,4px);
+  opacity:.5;
+  z-index:-1;
+  pointer-events:none;
+}
+
+.h1-main {
+  background: linear-gradient(180deg,
+    #ffffff 0%,
+    #ddaaff 20%,
+    #cc00ff 45%,
+    #ff00aa 72%,
+    #880088 100%
+  );
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  filter: drop-shadow(0 0 35px rgba(200,0,255,.8)) drop-shadow(0 0 80px rgba(255,0,150,.4));
+  animation: titleFlame 1.8s ease-in-out infinite alternate;
+}
+
+@keyframes titleFlame {
+  0% { filter: drop-shadow(0 0 25px rgba(200,0,255,.7)) drop-shadow(0 0 60px rgba(180,0,200,.35)); }
+  100% { filter: drop-shadow(0 0 50px rgba(255,0,200,1)) drop-shadow(0 0 100px rgba(200,0,255,.6)); }
+}
+
+.subtitle {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(12px,2vw,18px);
+  letter-spacing: 12px;
+  color: var(--cyan);
+  margin-top: 2px;
+  text-shadow: 0 0 25px rgba(0,238,255,.7), 0 0 60px rgba(0,238,255,.3);
+  animation: neonPulse 2.5s ease-in-out infinite;
+}
+@keyframes neonPulse {
+  0%,100% { opacity:.85; text-shadow: 0 0 20px rgba(0,238,255,.6); }
+  50% { opacity:1; text-shadow: 0 0 40px rgba(0,238,255,1), 0 0 80px rgba(0,238,255,.4); }
+}
+
+/* ── SPEED LINES DIVIDER ── */
+.speed-divider {
+  position: relative; height: 18px; margin: 6px 0;
+  overflow: hidden; flex-shrink: 0;
+}
+.speed-divider canvas { width:100%; height:100%; }
+
+/* ── AUDIO STATUS ── */
+.audio-bar {
+  display: flex; align-items: center; gap: 14px;
+  padding: 7px 16px; margin-bottom: 10px;
+  background: rgba(0,0,0,.65);
+  border: 1px solid rgba(0,200,255,.2);
+  border-top: 2px solid rgba(0,220,255,.45);
+  position: relative; overflow:hidden;
+  flex-shrink: 0;
+}
+.audio-bar::before {
+  content:'';
+  position:absolute; inset:0;
+  background: linear-gradient(90deg, transparent, rgba(0,200,255,.04), transparent);
+  animation: sweep 3s linear infinite;
+}
+@keyframes sweep { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }
+
+.audio-label {
+  font-size:10px; letter-spacing:4px; color:var(--acc3); white-space:nowrap;
+  text-shadow: 0 0 8px rgba(0,238,255,.6);
+}
+
+.eq-bars { display:flex; gap:3px; align-items:flex-end; height:22px; }
+.eq-b {
+  width:4px; border-radius:1px 1px 0 0;
+  background: linear-gradient(180deg, #00eeff, #cc00ff, #ff00aa);
+  transform-origin:bottom;
+  animation: eqAnim 0.35s ease-in-out infinite alternate;
+}
+.eq-b:nth-child(1){height:22px;animation-delay:0s}
+.eq-b:nth-child(2){height:22px;animation-delay:.04s}
+.eq-b:nth-child(3){height:22px;animation-delay:.08s}
+.eq-b:nth-child(4){height:22px;animation-delay:.12s}
+.eq-b:nth-child(5){height:22px;animation-delay:.16s}
+.eq-b:nth-child(6){height:22px;animation-delay:.20s}
+.eq-b:nth-child(7){height:22px;animation-delay:.24s}
+.eq-b:nth-child(8){height:22px;animation-delay:.28s}
+.eq-b:nth-child(9){height:22px;animation-delay:.32s}
+.eq-b:nth-child(10){height:22px;animation-delay:.36s}
+.eq-b:nth-child(11){height:22px;animation-delay:.40s}
+.eq-b:nth-child(12){height:22px;animation-delay:.44s}
+@keyframes eqAnim { 0%{transform:scaleY(.1)} 100%{transform:scaleY(1)} }
+
+.audio-track-name {
+  flex:1; font-size:12px; color:rgba(200,230,255,.8);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; letter-spacing:1px;
+}
+
+.audio-controls { display:flex; gap:8px; align-items:center; }
+.btn-audio {
+  background:none;
+  border:1px solid rgba(0,200,255,.25);
+  color:var(--acc3); cursor:pointer;
+  padding:5px 12px; border-radius:2px;
+  font-family:'Share Tech Mono',monospace; font-size:11px;
+  letter-spacing:1px; transition:all .15s;
+}
+.btn-audio:hover { background:rgba(0,200,255,.08); border-color:var(--acc3); box-shadow:0 0 10px rgba(0,220,255,.25); }
+input[type=file].hidden, input[type=file]#fi { display:none; }
+input[type=range].vol-slider {
+  -webkit-appearance:none; appearance:none;
+  width:60px; height:3px;
+  background:rgba(255,255,255,.1); border-radius:2px; outline:none; cursor:pointer;
+}
+input[type=range].vol-slider::-webkit-slider-thumb {
+  -webkit-appearance:none; width:11px; height:11px;
+  background:var(--acc3); border-radius:50%;
+  box-shadow:0 0 6px rgba(0,238,255,.7);
+}
+
+/* ── PANELS ── */
+.panel {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-top: 2px solid var(--panel-top);
+  border-radius: 2px;
+  padding: 14px 18px;
+  margin-bottom: 10px;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.panel::after {
+  content:'';
+  position:absolute; bottom:0; left:0; right:0; height:1px;
+  background: linear-gradient(90deg, transparent, rgba(0,238,255,.3), transparent);
+}
+
+.panel-corner {
+  position:absolute; width:10px; height:10px;
+  border-color: var(--cyan); border-style:solid;
+}
+.panel-corner.tl { top:-1px; left:-1px; border-width:2px 0 0 2px; }
+.panel-corner.tr { top:-1px; right:-1px; border-width:2px 2px 0 0; }
+.panel-corner.bl { bottom:-1px; left:-1px; border-width:0 0 2px 2px; }
+.panel-corner.br { bottom:-1px; right:-1px; border-width:0 2px 2px 0; }
+
+.section-tag {
+  font-size:9px; letter-spacing:5px; color:var(--acc3);
+  text-transform:uppercase; margin-bottom:8px;
+  display:flex; align-items:center; gap:12px;
+  text-shadow:0 0 10px rgba(0,238,255,.5);
+}
+.section-tag::before { content:'▸'; color:var(--acc1); }
+.section-tag::after { content:''; flex:1; height:1px; background:linear-gradient(90deg, rgba(0,220,255,.3), transparent); }
+
+/* ── INPUTS ── */
+.field-lbl {
+  display:block; font-size:9px; letter-spacing:3px;
+  color:var(--muted); text-transform:uppercase; margin-bottom:5px;
+}
+.field-row { display:flex; gap:7px; margin-bottom:8px; }
+
+input[type=text] {
+  flex:1; background:rgba(0,0,0,.55);
+  border:1px solid rgba(0,200,255,.18);
+  border-bottom-color:rgba(0,220,255,.4);
+  border-radius:2px; color:var(--text);
+  font-family:'Share Tech Mono',monospace; font-size:12px;
+  padding:9px 14px; outline:none;
+  transition: border-color .2s, box-shadow .2s; letter-spacing:1px;
+}
+input[type=text]::placeholder { color:rgba(180,140,220,.3); }
+input[type=text]:focus {
+  border-color:rgba(0,238,255,.6);
+  box-shadow:0 0 12px rgba(0,200,255,.18), inset 0 0 8px rgba(0,180,255,.05);
+}
+
+.btn {
+  background:rgba(0,0,0,.55);
+  border:1px solid rgba(0,200,255,.3);
+  color:var(--acc3); cursor:pointer;
+  padding:9px 16px; border-radius:2px;
+  font-family:'Share Tech Mono',monospace; font-size:11px; letter-spacing:2px;
+  white-space:nowrap; transition:all .15s;
+  text-shadow:0 0 8px rgba(0,238,255,.4);
+}
+.btn:hover {
+  background:rgba(0,200,255,.08);
+  border-color:var(--acc3);
+  box-shadow:0 0 14px rgba(0,220,255,.3);
+}
+.btn:active { transform:scale(.98); }
+
+/* ── DROP ZONE ── */
+.drop-zone {
+  border:2px dashed rgba(200,0,255,.2);
+  border-radius:3px; padding:10px;
+  text-align:center; cursor:pointer;
+  transition:all .2s; margin-bottom:8px;
+  position:relative; overflow:hidden;
+}
+.drop-zone:hover, .drop-zone.over {
+  border-color:rgba(0,238,255,.5);
+  background:rgba(0,200,255,.04);
+  box-shadow:0 0 20px rgba(0,200,255,.1) inset;
+}
+.dz-title {
+  font-family:'Bebas Neue',sans-serif; font-size:16px;
+  letter-spacing:4px; color:var(--acc3); opacity:.5;
+}
+.dz-sub { font-size:9px; color:var(--muted); letter-spacing:2px; margin-top:1px; }
+
+/* ── ZIP LIST ── */
+.list-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:5px; }
+.count-badge {
+  display:inline-block; font-size:10px;
+  background:rgba(200,0,255,.2); border:1px solid rgba(200,0,255,.35);
+  color:var(--acc2); padding:1px 8px; border-radius:1px; margin-left:6px;
+}
+.count-badge.sel { background:rgba(0,200,255,.15); border-color:var(--acc3); color:var(--acc3); }
+.btn-tiny {
+  background:none; border:1px solid rgba(200,0,255,.2); color:rgba(200,100,255,.5);
+  font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:1px;
+  padding:2px 8px; border-radius:1px; cursor:pointer; transition:all .15s;
+}
+.btn-tiny:hover { border-color:rgba(0,238,255,.5); color:var(--acc3); }
+
+.zip-list {
+  list-style:none; max-height:130px; overflow-y:auto;
+  border:1px solid rgba(200,0,255,.12); border-radius:2px;
+}
+.zip-list::-webkit-scrollbar { width:3px; }
+.zip-list::-webkit-scrollbar-track { background:rgba(0,0,0,.3); }
+.zip-list::-webkit-scrollbar-thumb { background:linear-gradient(180deg,var(--acc1),var(--acc2)); border-radius:2px; }
+
+.zip-item {
+  display:flex; align-items:center; gap:10px; padding:6px 12px;
+  border-bottom:1px solid rgba(200,0,255,.07);
+  cursor:pointer; transition:background .12s; user-select:none; position:relative;
+}
+.zip-item:last-child { border-bottom:none; }
+.zip-item:hover { background:rgba(200,0,255,.06); }
+.zip-item.sel { background:rgba(0,200,255,.07); border-left:2px solid var(--acc3); }
+.zip-item.sel::before {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(90deg, rgba(0,200,255,.07), transparent 60%);
+  pointer-events:none;
+}
+
+.zchk {
+  width:14px; height:14px; flex-shrink:0;
+  border:1px solid rgba(200,0,255,.3); border-radius:1px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:9px; color:#000; transition:all .12s;
+}
+.zip-item.sel .zchk { background:var(--acc3); border-color:var(--acc3); }
+
+.zname {
+  flex:1; font-size:12px; color:rgba(240,220,255,.85);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; letter-spacing:.5px;
+}
+.zip-item.sel .zname { color:#ccffff; }
+.zsize { font-size:10px; color:var(--muted); flex-shrink:0; }
+.btn-prev {
+  background:none; border:1px solid rgba(0,238,255,.18); color:rgba(0,238,255,.6);
+  font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:1px;
+  padding:2px 8px; border-radius:1px; cursor:pointer; flex-shrink:0; transition:all .15s;
+}
+.btn-prev:hover { border-color:var(--acc3); color:var(--acc3); box-shadow:0 0 8px rgba(0,238,255,.2); }
+
+/* ── DEST STATUS ── */
+.dest-status { font-size:10px; letter-spacing:1px; color:var(--muted); margin-top:5px; }
+.sdot { width:6px; height:6px; border-radius:50%; display:inline-block; margin-right:5px; }
+.sdot.ok { background:#39ff14; box-shadow:0 0 6px #39ff14; }
+.sdot.warn { background:#ffcc00; box-shadow:0 0 6px #ffcc00; }
+.sdot.err { background:var(--acc1); box-shadow:0 0 6px var(--acc1); }
+
+.path-preview {
+  margin-top:8px; background:rgba(0,0,0,.5);
+  border:1px solid rgba(0,200,255,.12); border-left:2px solid rgba(0,220,255,.4);
+  padding:8px 12px; border-radius:2px;
+  font-size:11px; line-height:1.7; letter-spacing:.5px;
+}
+.pp-key { color:rgba(0,220,255,.55); margin-right:8px; }
+.pp-val { color:rgba(180,160,220,.55); }
+.pp-fin { color:#39ff14; text-shadow:0 0 8px rgba(57,255,20,.4); }
+
+/* ── OPTIONS ── */
+.opt-row {
+  display:flex; align-items:center; gap:9px;
+  font-size:10px; letter-spacing:2px; color:var(--muted);
+  cursor:pointer; margin-bottom:5px; transition:color .15s;
+}
+.opt-row:hover { color:var(--acc3); }
+.opt-row input { accent-color:var(--acc3); }
+
+/* ── INSTALL BUTTON ── */
+.btn-install {
+  width:100%; padding:12px;
+  font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:8px;
+  color:#fff;
+  background: linear-gradient(135deg, #6600cc 0%, #cc00ff 35%, #ff00aa 60%, #6600cc 100%);
+  background-size:300% 300%;
+  border:none; border-radius:3px;
+  cursor:pointer; position:relative; overflow:hidden;
+  animation:installGlow 2s ease-in-out infinite;
+  transition:transform .1s;
+  text-shadow:0 2px 8px rgba(0,0,0,.6);
+}
+@keyframes installGlow {
+  0%,100% { box-shadow:0 0 20px rgba(180,0,255,.45),0 0 50px rgba(180,0,255,.15); background-position:0% 50%; }
+  50% { box-shadow:0 0 45px rgba(255,0,180,.8),0 0 90px rgba(200,0,255,.35); background-position:100% 50%; }
+}
+.btn-install:hover:not(:disabled) { transform:scale(1.01); }
+.btn-install:active:not(:disabled) { transform:scale(.99); }
+.btn-install:disabled {
+  background:rgba(60,30,15,.5); color:rgba(180,100,50,.3);
+  cursor:not-allowed; animation:none; box-shadow:none;
+}
+.btn-install::before {
+  content:''; position:absolute; top:0; left:-100%; width:40%; height:100%;
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
+  transition:left .5s;
+}
+.btn-install:not(:disabled):hover::before { left:150%; }
+
+/* ── PROGRESS ── */
+.progress-area { display:none; margin-top:8px; }
+.progress-area.on { display:block; }
+.prog-outer {
+  height:6px; border-radius:3px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,60,0,.2); overflow:hidden;
+}
+.prog-inner {
+  height:100%; width:0%;
+  background:linear-gradient(90deg,#6600cc,#cc00ff,#ff00aa,#00eeff);
+  border-radius:3px; transition:width .4s ease;
+  animation:progShine 1s linear infinite;
+}
+@keyframes progShine { 0%{filter:brightness(1)} 50%{filter:brightness(1.4)} 100%{filter:brightness(1)} }
+.prog-lbl { font-size:10px; letter-spacing:3px; color:var(--acc3); margin-top:6px; text-shadow:0 0 8px rgba(0,238,255,.4); }
+
+/* ── LOG ── */
+.logbox {
+  display:none; margin-top:6px;
+  background:rgba(0,0,0,.7);
+  border:1px solid rgba(0,200,255,.1);
+  border-radius:2px; padding:6px 10px;
+  font-size:10px; max-height:60px; overflow-y:auto;
+  line-height:1.6;
+}
+.logbox.on { display:block; }
+.logbox::-webkit-scrollbar { width:2px; }
+.logbox::-webkit-scrollbar-thumb { background:var(--fire1); }
+.ll { border-bottom:1px solid rgba(255,255,255,.025); padding:1px 0; }
+.ll.ok { color:#39ff14; } .ll.err { color:var(--fire1); }
+.ll.info { color:rgba(0,238,255,.7); } .ll.warn { color:#ffcc00; }
+
+/* ── PREVIEW MODAL ── */
+.modal-bg {
+  display:none; position:fixed; inset:0; z-index:100;
+  background:rgba(0,0,0,.82); backdrop-filter:blur(4px);
+  align-items:center; justify-content:center;
+}
+.modal-bg.open { display:flex; }
+.modal {
+  background:rgba(4,0,14,.96);
+  border:1px solid rgba(180,0,255,.4);
+  border-top:2px solid var(--cyan);
+  border-radius:3px; padding:26px;
+  width:min(580px,92vw); max-height:80vh;
+  overflow-y:auto; position:relative;
+  box-shadow:0 0 60px rgba(180,0,255,.22), 0 0 120px rgba(0,200,255,.1);
+}
+.modal::-webkit-scrollbar { width:3px; }
+.modal::-webkit-scrollbar-thumb { background:var(--fire2); }
+.modal-name {
+  font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:4px;
+  color:var(--acc3); margin-bottom:3px;
+  text-shadow:0 0 20px rgba(0,238,255,.4);
+}
+.modal-sub { font-size:10px; color:rgba(180,100,50,.5); letter-spacing:2px; margin-bottom:18px; }
+.modal-close {
+  position:absolute; top:16px; right:16px;
+  background:none; border:1px solid rgba(0,200,255,.3); color:var(--acc3);
+  font-family:'Share Tech Mono',monospace; font-size:11px;
+  padding:4px 10px; border-radius:1px; cursor:pointer; transition:all .15s;
+}
+.modal-close:hover { background:rgba(0,200,255,.08); }
+
+.tree { font-size:11px; line-height:1.9; }
+.tree-dir { color:var(--acc3); letter-spacing:.5px; }
+.tree-dir::before { content:'▸ '; opacity:.6; }
+.tree-file { color:rgba(180,120,70,.5); padding-left:18px; }
+.tree-file::before { content:'· '; color:rgba(255,80,0,.25); }
+.tree-more { color:rgba(180,100,50,.35); padding-left:18px; font-size:10px; }
+
+.modal-warn {
+  margin-top:14px; padding:10px 14px;
+  background:rgba(0,180,255,.06); border:1px solid rgba(0,200,255,.2);
+  border-radius:2px; font-size:10px; color:rgba(180,230,255,.7); line-height:1.8; letter-spacing:.5px;
+}
+.modal-install-btn {
+  margin-top:16px; width:100%; padding:13px;
+  font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:5px;
+  background:linear-gradient(135deg,#5500aa,#cc00ff,#ff00aa);
+  border:none; border-radius:2px; color:#fff; cursor:pointer;
+  transition:all .15s; box-shadow:0 0 20px rgba(180,0,255,.3);
+}
+.modal-install-btn:hover { box-shadow:0 0 35px rgba(220,0,255,.6); transform:scale(1.01); }
+
+/* ── TOAST ── */
+.toast {
+  position:fixed; bottom:28px; left:50%;
+  transform:translateX(-50%) translateY(80px);
+  z-index:200;
+  background:rgba(2,0,14,.95);
+  border:1px solid var(--acc2); border-top:2px solid var(--acc3);
+  padding:12px 28px;
+  font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:4px;
+  color:var(--acc3); text-align:center;
+  box-shadow:0 0 30px rgba(0,200,255,.3);
+  transition:transform .35s cubic-bezier(.34,1.56,.64,1);
+}
+.toast.show { transform:translateX(-50%) translateY(0); }
+.toast.ok { border-color:#39ff14; border-top-color:#39ff14; color:#39ff14; box-shadow:0 0 30px rgba(57,255,20,.25); }
+
+.path-pill {
+  display:inline-block; margin:2px 4px 2px 0;
+  background:rgba(0,180,255,.08); border:1px solid rgba(0,200,255,.25);
+  color:rgba(180,230,255,.8); border-radius:2px;
+  font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:.5px;
+  padding:3px 10px; cursor:pointer; transition:all .15s;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;
+}
+.path-pill:hover { background:rgba(0,200,255,.15); border-color:var(--acc3); color:var(--acc3); }
+.path-pill.wf2 { border-color:rgba(57,255,20,.4); color:rgba(57,255,20,.8); background:rgba(57,255,20,.06); }
+
+/* ── TABS ── */
+.tab-nav {
+  display:flex; gap:0; margin-bottom:10px; flex-shrink:0;
+  border-bottom:2px solid rgba(0,200,255,.2);
+}
+.tab-btn {
+  background:none; border:none; border-bottom:2px solid transparent;
+  margin-bottom:-2px; padding:7px 22px;
+  font-family:'Bebas Neue',sans-serif; font-size:16px; letter-spacing:4px;
+  color:rgba(180,160,220,.45); cursor:pointer; transition:all .2s;
+  position:relative;
+}
+.tab-btn:hover { color:rgba(200,180,255,.7); }
+.tab-btn.active {
+  color:var(--acc3);
+  border-bottom-color:var(--acc3);
+  text-shadow:0 0 12px rgba(0,238,255,.5);
+}
+.tab-btn .tab-cs {
+  font-family:'Share Tech Mono',monospace; font-size:8px; letter-spacing:2px;
+  color:var(--acc1); vertical-align:super; margin-left:4px;
+  text-shadow:0 0 6px rgba(255,0,136,.6);
+  animation: csPulse 2s ease-in-out infinite;
+}
+@keyframes csPulse { 0%,100%{opacity:.5} 50%{opacity:1} }
+
+.tab-panel { display:none; flex-direction:column; flex:1; overflow:hidden; }
+.tab-panel.active { display:flex; flex-direction:column; }
+
+/* ── LIVERY COMING SOON ── */
+.cs-wrap {
+  flex:1; display:flex; flex-direction:column; gap:10px;
+}
+.cs-hero {
+  flex:1;
+  background:rgba(0,0,0,.5);
+  border:1px solid rgba(200,0,255,.2);
+  border-top:2px solid rgba(200,0,255,.4);
+  border-radius:2px;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  position:relative; overflow:hidden;
+  padding:20px;
+  backdrop-filter:blur(6px);
+}
+.cs-hero::before {
+  content:'';
+  position:absolute; inset:0;
+  background:
+    radial-gradient(ellipse 60% 40% at 50% 60%, rgba(200,0,255,.08) 0%, transparent 70%),
+    repeating-linear-gradient(0deg, transparent, transparent 28px, rgba(200,0,255,.04) 29px);
+  pointer-events:none;
+}
+.cs-title {
+  font-family:'Bebas Neue',sans-serif; font-size:52px; letter-spacing:8px;
+  background:linear-gradient(180deg,#fff 0%,#cc00ff 50%,#ff00aa 100%);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  filter:drop-shadow(0 0 20px rgba(200,0,255,.6));
+  animation:csTitlePulse 2.5s ease-in-out infinite alternate;
+  line-height:1;
+}
+@keyframes csTitlePulse {
+  0%{filter:drop-shadow(0 0 15px rgba(200,0,255,.5))}
+  100%{filter:drop-shadow(0 0 35px rgba(255,0,180,.9))}
+}
+.cs-sub {
+  font-family:'Share Tech Mono',monospace; font-size:10px;
+  letter-spacing:5px; color:rgba(200,160,255,.5); margin-top:6px;
+}
+.cs-features {
+  display:grid; grid-template-columns:1fr 1fr; gap:8px;
+  margin-top:18px; width:100%; max-width:520px;
+}
+.cs-feat {
+  background:rgba(0,0,0,.4); border:1px solid rgba(200,0,255,.15);
+  border-radius:2px; padding:10px 14px;
+  display:flex; align-items:center; gap:10px;
+}
+.cs-feat-icon { font-size:18px; flex-shrink:0; filter:grayscale(0.3); }
+.cs-feat-text { font-size:10px; letter-spacing:1px; color:rgba(200,160,255,.55); line-height:1.6; }
+.cs-feat-text strong { display:block; color:rgba(220,190,255,.8); letter-spacing:2px; margin-bottom:2px; font-size:11px; }
+
+.cs-bottom {
+  display:flex; gap:10px; flex-shrink:0;
+}
+.cs-info {
+  flex:1; background:rgba(0,0,0,.5); border:1px solid rgba(200,0,255,.15);
+  border-radius:2px; padding:10px 14px;
+  font-family:'Share Tech Mono',monospace; font-size:10px;
+  color:rgba(180,140,220,.5); line-height:1.8; letter-spacing:.5px;
+}
+.cs-info span { color:rgba(0,238,255,.7); }
+
+/* ── LAYOUT ── */
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:10px; flex-shrink:0; }
+@media(max-width:640px){ .two-col{grid-template-columns:1fr} h1{font-size:42px} }
+
+@keyframes flickerIn {
+  0%,49%{opacity:0} 50%,100%{opacity:.7}
+}
+</style>
+</head>
+<body>
+
+<canvas id="bgCanvas"></canvas>
+<div class="grain"></div>
+<div class="scanlines"></div>
+<div class="vignette"></div>
+
+<div id="app">
+  <header>
+    <div class="pre-title">▸ ROTA COMMUNITY // QueenOfPain666</div>
+    <h1>
+      <div class="h1-shadow">WRECKFEST 2</div>
+      <div class="h1-main">WRECKFEST 2</div>
+    </h1>
+    <div class="subtitle">MOD INSTALLER</div>
+  </header>
+
+  <!-- SPEED LINES DIVIDER -->
+  <div class="speed-divider"><canvas id="sdCanvas"></canvas></div>
+
+  <!-- AUDIO BAR -->
+  <div class="audio-bar" id="audioBar">
+    <div class="audio-label">SOUND</div>
+    <div class="eq-bars">
+      <div class="eq-b"></div><div class="eq-b"></div><div class="eq-b"></div>
+      <div class="eq-b"></div><div class="eq-b"></div><div class="eq-b"></div>
+      <div class="eq-b"></div><div class="eq-b"></div><div class="eq-b"></div>
+      <div class="eq-b"></div><div class="eq-b"></div><div class="eq-b"></div>
+    </div>
+    <div class="audio-track-name" id="trackName">MIDNIGHT HIGHWAY CIRCUIT</div>
+    <div class="audio-controls">
+      <input type="range" class="vol-slider" id="volSlider" min="0" max="1" step="0.05" value="0.55">
+      <button class="btn-audio" id="btnToggleMusic">⏸ MUTE</button>
+    </div>
+  </div>
+  <audio id="bgAudio" src="Midnight_Highway_Circuit.mp3" loop autoplay preload="auto"></audio>
+
+  <!-- TAB NAV -->
+  <div class="tab-nav">
+    <button class="tab-btn active" id="tabBtnMods" onclick="switchTab('mods')">MODS</button>
+    <button class="tab-btn" id="tabBtnLivery" onclick="switchTab('livery')">LIVERYS <span class="tab-cs">SOON</span></button>
+  </div>
+
+  <!-- TAB: MODS -->
+  <div class="tab-panel active" id="tabMods">
+    <div class="two-col">
+      <!-- SOURCE -->
+      <div class="panel">
+        <div class="panel-corner tl"></div><div class="panel-corner tr"></div>
+        <div class="panel-corner bl"></div><div class="panel-corner br"></div>
+        <div class="section-tag">01 // QUELLE — ZIP MODS</div>
+
+        <label class="field-lbl">Download-Verzeichnis</label>
+        <div class="field-row">
+          <input type="text" id="srcDir" placeholder="~/Downloads">
+          <button class="btn" id="btnScan">SCAN</button>
+        </div>
+
+        <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+          <input type="file" id="fileInput" accept=".zip" multiple class="hidden">
+          <div class="dz-title">ZIP HIER REINWERFEN</div>
+          <div class="dz-sub">klicken · drag &amp; drop · mehrere möglich</div>
+        </div>
+
+        <div class="list-header">
+          <span style="font-size:10px;color:rgba(180,100,50,.5);letter-spacing:2px">
+            GEFUNDEN<span class="count-badge" id="cntFound">0</span>
+            GEWÄHLT<span class="count-badge sel" id="cntSel">0</span>
+          </span>
+          <div style="display:flex;gap:5px">
+            <button class="btn-tiny" onclick="selAll()">ALLE</button>
+            <button class="btn-tiny" onclick="selNone()">KEINE</button>
+          </div>
+        </div>
+
+        <ul class="zip-list" id="zipList">
+          <li style="padding:14px;text-align:center;font-size:11px;color:rgba(180,100,50,.35);letter-spacing:2px">— SCAN STARTEN ODER ZIP DROPPEN —</li>
+        </ul>
+      </div>
+
+      <!-- DEST -->
+      <div class="panel">
+        <div class="panel-corner tl"></div><div class="panel-corner tr"></div>
+        <div class="panel-corner bl"></div><div class="panel-corner br"></div>
+        <div class="section-tag">02 // ZIEL — WRECKFEST 2 /data</div>
+
+        <label class="field-lbl">Steam-Bibliothek (steamapps/common)</label>
+        <div class="field-row">
+          <input type="text" id="destDir" placeholder="Pfad zu steamapps/common">
+          <button class="btn" id="btnAuto">AUTO</button>
+          <button class="btn" id="btnBrowse">📁 WÄHLEN</button>
+        </div>
+        <div id="foundPaths" style="display:none;margin-bottom:6px"></div>
+        <div class="dest-status" id="destStatus">— noch nicht geprüft —</div>
+
+        <div class="path-preview">
+          <div><span class="pp-key">STEAM</span><span class="pp-val" id="ppSteam">steamapps/common</span></div>
+          <div><span class="pp-key">GAME </span><span class="pp-val">Wreckfest 2</span></div>
+          <div><span class="pp-key">ZIEL &nbsp;</span><span class="pp-fin">data/ &nbsp;← Mods landen hier</span></div>
+        </div>
+
+        <div style="margin-top:10px">
+          <div class="section-tag" style="font-size:9px">OPTIONEN</div>
+          <label class="opt-row"><input type="checkbox" id="optBak"> BACKUP VOR ÜBERSCHREIBEN</label>
+          <label class="opt-row"><input type="checkbox" id="optDel"> ZIP NACH INSTALL LÖSCHEN</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- INSTALL -->
+    <div class="panel">
+      <div class="panel-corner tl"></div><div class="panel-corner tr"></div>
+      <div class="panel-corner bl"></div><div class="panel-corner br"></div>
+      <div class="section-tag">03 // INSTALLATION</div>
+      <button class="btn-install" id="btnInstall" disabled onclick="doInstall()">⚡ MODS INSTALLIEREN ⚡</button>
+      <div class="progress-area" id="progArea">
+        <div class="prog-outer"><div class="prog-inner" id="progBar"></div></div>
+        <div class="prog-lbl" id="progLbl">INITIALISIERE...</div>
+      </div>
+      <div class="logbox" id="logBox"></div>
+    </div>
+  </div>
+
+  <!-- TAB: LIVERYS -->
+  <div class="tab-panel" id="tabLivery">
+    <div class="cs-wrap">
+      <div class="cs-hero">
+        <div class="cs-title">COMING SOON</div>
+        <div class="cs-sub">LIVERY INSTALLER // QUEENOFPAIN666</div>
+        <div class="cs-features">
+          <div class="cs-feat">
+            <div class="cs-feat-icon">🎨</div>
+            <div class="cs-feat-text"><strong>LIVERY LADEN</strong>ZIP oder einzelne Dateien — direkt reinwerfen</div>
+          </div>
+          <div class="cs-feat">
+            <div class="cs-feat-icon">🖼️</div>
+            <div class="cs-feat-text"><strong>PNG VORSCHAU</strong>Aus dem ZIP oder separat geladen</div>
+          </div>
+          <div class="cs-feat">
+            <div class="cs-feat-icon">⚡</div>
+            <div class="cs-feat-text"><strong>1-KLICK INSTALL</strong>Direkt nach Wreckfest 2 /data/vehicles</div>
+          </div>
+          <div class="cs-feat">
+            <div class="cs-feat-icon">🔗</div>
+            <div class="cs-feat-text"><strong>ROTA LIVERYS</strong>Queenies Liverys wenn sie fertig sind — hier zuerst</div>
+          </div>
+        </div>
+      </div>
+      <div class="cs-bottom">
+        <div class="cs-info">
+          Livery-Support kommt sobald <span>Wreckfest 2</span> einen stabilen
+          Mod-Pfad für Fahrzeugdaten hat. Das Tool wird dann automatisch
+          aktualisiert — <span>kein Neuinstallieren</span> nötig.
+        </div>
+        <div class="cs-info" style="text-align:center;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px">
+          <span style="font-size:18px">👁️</span>
+          <span style="color:rgba(220,190,255,.7);letter-spacing:2px;font-size:11px">WATCH THIS SPACE</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<!-- MODAL -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕ CLOSE</button>
+    <div class="modal-name" id="modalName">MOD</div>
+    <div class="modal-sub" id="modalSub"></div>
+    <div class="tree" id="modalTree"></div>
+    <div class="modal-warn" id="modalWarn"></div>
+    <button class="modal-install-btn" onclick="installFromModal()">⚡ DIESEN MOD INSTALLIEREN</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+
+<script>
+// ╔══════════════════════════════════════════════════════╗
+// ║  BG CANVAS — city silhouette, speed lines, fire,     ║
+// ║  particles, explosion glow — demoscene style         ║
+// ╚══════════════════════════════════════════════════════╝
+
+const bgC = document.getElementById('bgCanvas');
+const bgX = bgC.getContext('2d');
+let W, H;
+
+function resizeBG() { W = bgC.width = window.innerWidth; H = bgC.height = window.innerHeight; }
+window.addEventListener('resize', resizeBG);
+resizeBG();
+
+// Particles — cyan, magenta, orange from the photo
+let particles = [];
+function spawnParticle() {
+  const side = Math.random() > .5;
+  const colors = ['#ff0099','#cc00ff','#00eeff','#ff4400','#ffaaff','#ffffff'];
+  particles.push({
+    x: side ? Math.random()*W*.4 : W*.6+Math.random()*W*.4,
+    y: H*.4 + Math.random()*H*.45,
+    vx: (side?1:-1)*(Math.random()*7+2),
+    vy: -(Math.random()*4+.5),
+    life: 1,
+    size: Math.random()*2.2+.3,
+    color: colors[Math.floor(Math.random()*colors.length)]
+  });
+}
+
+// Burst glows — timed, subtler over the photo
+let glows = [];
+function spawnGlow() {
+  const types = [
+    {x:W*.2+Math.random()*W*.15, c1:'rgba(255,0,150,.25)', c2:'rgba(180,0,255,.1)'},
+    {x:W*.65+Math.random()*W*.15, c1:'rgba(0,200,255,.2)', c2:'rgba(100,0,255,.08)'},
+    {x:W*.4+Math.random()*W*.2,  c1:'rgba(255,80,0,.22)', c2:'rgba(200,0,100,.1)'},
+  ];
+  const t = types[Math.floor(Math.random()*types.length)];
+  glows.push({ x:t.x, y:H*.45+Math.random()*H*.25, r:0, maxR:80+Math.random()*120, life:1, c1:t.c1, c2:t.c2 });
+}
+
+// Speed lines — pulled from the portrait's light streaks
+let speedLines = [];
+function spawnSpeedLine() {
+  const y = Math.random()*H*.9;
+  const right = Math.random()>.5;
+  const palette = ['#00eeff','#ff00aa','#cc00ff','#ff3300','#ffffff','#ffaaff'];
+  speedLines.push({
+    x: right ? W+5 : -5,
+    y, len: 80+Math.random()*280,
+    speed: 20+Math.random()*35,
+    life: 1,
+    color: palette[Math.floor(Math.random()*palette.length)],
+    right,
+    w: Math.random()*1.4+.2
+  });
+}
+
+let frame = 0, lastGlow = 0;
+
+function drawBG() {
+  frame++;
+  bgX.clearRect(0,0,W,H);
+
+  // Speed lines
+  if(Math.random()<.18) spawnSpeedLine();
+  speedLines = speedLines.filter(l=>l.life>0);
+  speedLines.forEach(l=>{
+    l.x += l.right?-l.speed:l.speed;
+    l.life -= .02;
+    const g = bgX.createLinearGradient(l.x,l.y, l.x+(l.right?l.len:-l.len),l.y);
+    g.addColorStop(0,'transparent'); g.addColorStop(.3,l.color); g.addColorStop(1,'transparent');
+    bgX.globalAlpha = l.life*.55;
+    bgX.strokeStyle = g; bgX.lineWidth = l.w;
+    bgX.beginPath(); bgX.moveTo(l.x,l.y); bgX.lineTo(l.x+(l.right?l.len:-l.len),l.y); bgX.stroke();
+  });
+  bgX.globalAlpha=1;
+
+  // Burst glows
+  if(frame-lastGlow>100+Math.random()*100) { spawnGlow(); lastGlow=frame; }
+  glows = glows.filter(g=>g.life>0);
+  glows.forEach(g=>{
+    g.r += (g.maxR-g.r)*.06; g.life -= .014;
+    const eg = bgX.createRadialGradient(g.x,g.y,0,g.x,g.y,g.r);
+    eg.addColorStop(0,g.c1.replace(/[\d.]+\)$/,`${g.life*.8})`));
+    eg.addColorStop(.5,g.c2.replace(/[\d.]+\)$/,`${g.life*.4})`));
+    eg.addColorStop(1,'transparent');
+    bgX.fillStyle=eg;
+    bgX.beginPath(); bgX.arc(g.x,g.y,g.r,0,Math.PI*2); bgX.fill();
+  });
+
+  // Particles
+  if(Math.random()<.3) spawnParticle();
+  if(particles.length>200) particles=particles.slice(-200);
+  particles = particles.filter(p=>p.life>0);
+  particles.forEach(p=>{
+    p.x+=p.vx; p.y+=p.vy; p.vy+=.09; p.life-=.016;
+    bgX.globalAlpha=p.life*.7;
+    bgX.fillStyle=p.color;
+    bgX.beginPath(); bgX.arc(p.x,p.y,p.size*(p.life+.1),0,Math.PI*2); bgX.fill();
+  });
+  bgX.globalAlpha=1;
+
+  requestAnimationFrame(drawBG);
+}
+drawBG();
+
+// Speed lines divider — magenta/cyan/purple palette
+const sdC = document.getElementById('sdCanvas');
+const sdX = sdC.getContext('2d');
+function drawSpeedDiv() {
+  sdC.width=sdC.offsetWidth||window.innerWidth; sdC.height=28;
+  const sw=sdC.width, sh=28;
+  sdX.clearRect(0,0,sw,sh);
+  const colors=['#ff0088','#cc00ff','#00eeff','#ff3300','#ffffff','#aa44ff','#ff44cc'];
+  for(let i=0;i<70;i++) {
+    const x=Math.random()*sw;
+    const len=20+Math.random()*200;
+    const col=colors[Math.floor(Math.random()*colors.length)];
+    const g=sdX.createLinearGradient(x,0,x+len,0);
+    g.addColorStop(0,'transparent'); g.addColorStop(.35,col); g.addColorStop(1,'transparent');
+    sdX.globalAlpha=.25+Math.random()*.55;
+    sdX.strokeStyle=g; sdX.lineWidth=.4+Math.random()*1.8;
+    sdX.beginPath();
+    sdX.moveTo(x, sh*.25+Math.random()*sh*.5);
+    sdX.lineTo(x+len, sh*.25+Math.random()*sh*.5);
+    sdX.stroke();
+  }
+  sdX.globalAlpha=1;
+  // Center magenta→cyan line
+  const cl=sdX.createLinearGradient(0,0,sw,0);
+  cl.addColorStop(0,'transparent'); cl.addColorStop(.15,'#ff0088'); cl.addColorStop(.4,'#cc00ff');
+  cl.addColorStop(.6,'#00eeff'); cl.addColorStop(.85,'#ff0088'); cl.addColorStop(1,'transparent');
+  sdX.strokeStyle=cl; sdX.lineWidth=1.5; sdX.globalAlpha=.75;
+  sdX.beginPath(); sdX.moveTo(0,14); sdX.lineTo(sw,14); sdX.stroke();
+  sdX.globalAlpha=1;
+}
+drawSpeedDiv();
+setInterval(drawSpeedDiv, 350);
+
+
+// ── AUDIO — autoplay + loop MP3 ──
+const bgAudio = document.getElementById('bgAudio');
+let muted = false;
+bgAudio.volume = parseFloat(document.getElementById('volSlider').value);
+
+// Autoplay: browsers need a gesture — play on first interaction if needed
+function ensurePlay() {
+  if(bgAudio.paused) bgAudio.play().catch(()=>{});
+}
+document.addEventListener('click', ensurePlay, { once: false });
+bgAudio.play().catch(() => {
+  // Will be triggered on first user interaction via ensurePlay
+});
+
+document.getElementById('volSlider').addEventListener('input', e => {
+  bgAudio.volume = parseFloat(e.target.value);
+});
+
+document.getElementById('btnToggleMusic').addEventListener('click', () => {
+  muted = !muted;
+  bgAudio.muted = muted;
+  document.getElementById('btnToggleMusic').textContent = muted ? '▶ SOUND' : '⏸ MUTE';
+});
+
+// ╔══════════════════════════════════════════════════════╗
+// ║  APP LOGIC                                           ║
+// ╚══════════════════════════════════════════════════════╝
+const API='http://127.0.0.1:7666/api';
+let allZips=[], selected=new Set(), previewZip=null;
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tabBtn'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active');
+  document.getElementById('tab'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active');
+}
+
+function toast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast show'+(type?' '+type:'');
+  setTimeout(()=>t.className='toast',3000);
+}
+
+function log(msg,type='info'){
+  const b=document.getElementById('logBox'); b.classList.add('on');
+  const d=document.createElement('div'); d.className='ll '+type;
+  d.textContent='» '+msg; b.appendChild(d); b.scrollTop=b.scrollHeight;
+}
+
+function renderList(zips){
+  allZips=zips;
+  document.getElementById('cntFound').textContent=zips.length;
+  document.getElementById('cntSel').textContent=selected.size;
+  const ul=document.getElementById('zipList');
+  if(!zips.length){
+    ul.innerHTML='<li style="padding:14px;text-align:center;font-size:11px;color:rgba(180,100,50,.3);letter-spacing:2px">— KEINE ZIPs GEFUNDEN —</li>';
+    return;
+  }
+  ul.innerHTML='';
+  zips.forEach(z=>{
+    const li=document.createElement('li');
+    li.className='zip-item'+(selected.has(z.path)?' sel':'');
+    li.innerHTML=`<div class="zchk">${selected.has(z.path)?'✓':''}</div>
+      <div class="zname" title="${z.name}">${z.name}</div>
+      <div class="zsize">${(z.size/1048576).toFixed(1)}MB</div>
+      <button class="btn-prev">INHALT</button>`;
+    li.querySelector('.btn-prev').addEventListener('click',ev=>{ev.stopPropagation();openModal(z);});
+    li.addEventListener('click',()=>toggleZip(z.path,li));
+    ul.appendChild(li);
+  });
+  updateInstallBtn();
+}
+
+function toggleZip(path,el){
+  if(selected.has(path)){selected.delete(path);el.classList.remove('sel');el.querySelector('.zchk').textContent='';}
+  else{selected.add(path);el.classList.add('sel');el.querySelector('.zchk').textContent='✓';}
+  document.getElementById('cntSel').textContent=selected.size;
+  updateInstallBtn();
+}
+
+function selAll(){allZips.forEach(z=>selected.add(z.path));renderList(allZips);}
+function selNone(){selected.clear();renderList(allZips);}
+
+function updateInstallBtn(){
+  const dest=document.getElementById('destDir').value.trim();
+  const btn=document.getElementById('btnInstall');
+  btn.disabled=selected.size===0||!dest;
+  btn.textContent=selected.size>0&&dest
+    ?`⚡ ${selected.size} MOD${selected.size>1?'S':''} INSTALLIEREN ⚡`
+    :'⚡ MODS INSTALLIEREN ⚡';
+}
+
+document.getElementById('btnScan').addEventListener('click',async()=>{
+  
+  const dir=document.getElementById('srcDir').value.trim()||'~/Downloads';
+  log(`Scanne: ${dir}`,'info');
+  try{
+    const r=await fetch(`${API}/list-zips?dir=${encodeURIComponent(dir)}`);
+    const d=await r.json();
+    if(d.error){log(d.error,'err');return;}
+    selected.clear(); renderList(d.files);
+    log(`${d.files.length} ZIP(s) gefunden`,'ok');
+  }catch(e){log('Backend offline — node server.js starten!','err');toast('BACKEND OFFLINE');}
+});
+
+const dz=document.getElementById('dropZone');
+['dragenter','dragover'].forEach(e=>dz.addEventListener(e,ev=>{ev.preventDefault();dz.classList.add('over');}));
+['dragleave','drop'].forEach(e=>dz.addEventListener(e,()=>dz.classList.remove('over')));
+dz.addEventListener('drop',ev=>{
+  ev.preventDefault(); 
+  const files=Array.from(ev.dataTransfer.files).filter(f=>f.name.endsWith('.zip'));
+  if(!files.length){toast('NUR ZIP-DATEIEN');return;}
+  const nz=files.map(f=>({name:f.name,path:f.path||f.name,size:f.size,fileObj:f}));
+  nz.forEach(z=>selected.add(z.path)); renderList([...allZips,...nz]);
+  log(`${files.length} ZIP(s) per Drag & Drop`,'ok');
+});
+document.getElementById('fileInput').addEventListener('change',ev=>{
+  const files=Array.from(ev.target.files);
+  const nz=files.map(f=>({name:f.name,path:f.name,size:f.size,fileObj:f}));
+  nz.forEach(z=>selected.add(z.path)); renderList([...allZips,...nz]);
+});
+
+document.getElementById('btnAuto').addEventListener('click',async()=>{
+  log('Suche Steam-Bibliotheken auf allen Laufwerken...','info');
+  try{
+    const r=await fetch(`${API}/steam-paths`);
+    const d=await r.json();
+    if(d.paths.length){
+      document.getElementById('destDir').value=d.paths[0];
+      checkDest(d.paths[0]);
+      log(`${d.paths.length} Bibliothek(en) gefunden`,'ok');
+      // Show all as clickable pills
+      const fp=document.getElementById('foundPaths');
+      fp.style.display='block';
+      fp.innerHTML=d.paths.map(p=>{
+        const short=p.length>55?'...'+p.slice(-52):p;
+        const esc=p.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+        return `<button class="path-pill" onclick="selectPath('${esc}')" title="${p}">${short}</button>`;
+      }).join('');
+    }else{
+      log('Keine Steam-Bibliothek gefunden — bitte manuell wählen','warn');
+      toast('NICHT GEFUNDEN — MANUELL WÄHLEN');
+    }
+  }catch(e){log('Backend offline','err');}
+});
+
+window.selectPath=function(p){
+  document.getElementById('destDir').value=p;
+  checkDest(p); updateInstallBtn();
+};
+
+document.getElementById('btnBrowse').addEventListener('click',async()=>{
+  if(window._ipc&&window._ipc.browseFolder){
+    const chosen=await window._ipc.browseFolder();
+    if(chosen){
+      document.getElementById('destDir').value=chosen;
+      checkDest(chosen); updateInstallBtn();
+      log(`Manuell gewählt: ${chosen}`,'info');
+    }
+  }else{
+    toast('ORDNERWAHL NUR IN DER APP');
+  }
+});
+
+document.getElementById('destDir').addEventListener('input',e=>{
+  const v=e.target.value.trim(); if(v) checkDest(v); updateInstallBtn();
+});
+
+async function checkDest(dir){
+  const el=document.getElementById('destStatus');
+  document.getElementById('ppSteam').textContent=dir.split(/[\\/]/).slice(-2).join('/')||dir;
+  try{
+    const r=await fetch(`${API}/check-dest?dir=${encodeURIComponent(dir)}`);
+    const d=await r.json();
+    if(d.dataFound) el.innerHTML='<span class="sdot ok"></span>Wreckfest 2 /data gefunden ✓';
+    else if(d.wreckfest2Found) el.innerHTML='<span class="sdot warn"></span>Wreckfest 2 OK — /data wird angelegt';
+    else if(d.exists) el.innerHTML='<span class="sdot warn"></span>Pfad OK — Wreckfest 2 nicht gefunden';
+    else el.innerHTML='<span class="sdot err"></span>Pfad nicht gefunden';
+  }catch(e){ el.innerHTML='<span class="sdot warn"></span>Backend offline'; }
+}
+
+function renderModalTree(files, totalCount, sizeMB) {
+  document.getElementById('modalSub').textContent=`${sizeMB} MB · ${totalCount} Einträge`;
+  const tree=document.getElementById('modalTree'); tree.innerHTML='';
+  const groups={};
+  files.forEach(f=>{
+    const parts=f.split('/'); const top=parts.length>1?parts[0]:'(root)';
+    if(!groups[top]) groups[top]=[]; groups[top].push(parts.slice(1).join('/')||f);
+  });
+  Object.entries(groups).forEach(([dir,fs])=>{
+    const dd=document.createElement('div'); dd.className='tree-dir'; dd.textContent=dir+'/'; tree.appendChild(dd);
+    fs.slice(0,12).forEach(f=>{const fd=document.createElement('div');fd.className='tree-file';fd.textContent=f;tree.appendChild(fd);});
+    if(fs.length>12){const m=document.createElement('div');m.className='tree-more';m.textContent=`... +${fs.length-12} weitere`;tree.appendChild(m);}
+  });
+  const topDirs=Object.keys(groups);
+  const wEl=document.getElementById('modalWarn');
+  if(topDirs.includes('(root)')) wEl.textContent='⚠ Dateien direkt im ZIP-Root — landen ohne Unterordner in /data/';
+  else wEl.textContent=`✓ Struktur OK — ${topDirs.length} Ordner werden nach /data/ extrahiert`;
+}
+
+async function openModal(zip){
+  previewZip=zip;
+  document.getElementById('modalName').textContent=zip.name.replace(/\.zip$/i,'');
+  const sizeMB=(zip.size/1048576).toFixed(1);
+  document.getElementById('modalSub').textContent=`${sizeMB} MB — lade Inhalt...`;
+  document.getElementById('modalTree').innerHTML='<span style="color:rgba(180,100,50,.4);font-size:11px;letter-spacing:2px">ANALYSIERE ZIP...</span>';
+  document.getElementById('modalWarn').textContent='';
+  document.getElementById('modalBg').classList.add('open');
+
+  // Path 1: file object available (drag & drop or file picker) → read in-browser via JSZip
+  if(zip.fileObj) {
+    try {
+      const JSZip = window.JSZip;
+      const zdata = await JSZip.loadAsync(zip.fileObj);
+      const names = Object.keys(zdata.files).filter(n=>!zdata.files[n].dir);
+      renderModalTree(names, Object.keys(zdata.files).length, sizeMB);
+      return;
+    } catch(e) { /* fall through to backend */ }
+  }
+
+  // Path 2: backend available → ask server
+  try {
+    const r=await fetch(`${API}/zip-preview?path=${encodeURIComponent(zip.path)}`);
+    const d=await r.json();
+    if(d.error){document.getElementById('modalTree').innerHTML=`<span style="color:var(--fire1)">${d.error}</span>`;return;}
+    renderModalTree(d.files, d.total, sizeMB);
+  } catch(e) {
+    // Path 3: neither available — show path info only
+    document.getElementById('modalSub').textContent=`${sizeMB} MB`;
+    document.getElementById('modalTree').innerHTML='<span style="color:rgba(180,100,50,.4);font-size:11px;letter-spacing:1px">Vorschau nicht verfügbar ohne Backend.<br>Installation trotzdem möglich.</span>';
+    document.getElementById('modalWarn').textContent='ℹ Backend starten für ZIP-Analyse: node server.js';
+  }
+}
+
+function closeModal(){document.getElementById('modalBg').classList.remove('open');}
+document.getElementById('modalBg').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
+
+function installFromModal(){
+  if(!previewZip) return;
+  selected.add(previewZip.path);
+  if(!allZips.find(z=>z.path===previewZip.path)) allZips.push(previewZip);
+  renderList(allZips); closeModal();
+  const dest=document.getElementById('destDir').value.trim();
+  if(!dest){toast('ZIEL-PFAD EINTRAGEN');return;}
+  doInstall();
+}
+
+async function doInstall(){
+  
+  if(!selected.size) return;
+  const dest=document.getElementById('destDir').value.trim();
+  if(!dest){toast('ZIEL-PFAD FEHLT');return;}
+  const zips=Array.from(selected);
+  const pa=document.getElementById('progArea'),pb=document.getElementById('progBar'),pl=document.getElementById('progLbl');
+  pa.classList.add('on'); document.getElementById('btnInstall').disabled=true;
+  log(`Installation: ${zips.length} Mod(s) → /data/`,'info');
+  let done=0;
+  for(const zp of zips){
+    const name=zp.split(/[\\/]/).pop();
+    pl.textContent=`INSTALLIERE: ${name}`;
+    log(`Extrahiere ${name}...`,'info');
+    try{
+      const r=await fetch(`${API}/install`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({zipPath:zp,destBase:dest})});
+      const d=await r.json();
+      if(d.success){done++;log(`✓ ${d.modName} → ${d.destDir}`,'ok');}
+      else log(`✗ ${name}: ${d.error}`,'err');
+    }catch(e){log(`✗ ${name}: Verbindungsfehler`,'err');}
+    pb.style.width=((done/zips.length)*100)+'%';
+  }
+  pl.textContent=`FERTIG — ${done}/${zips.length}`;
+  log(`─── Abgeschlossen: ${done}/${zips.length} ───`,done===zips.length?'ok':'warn');
+  toast(done===zips.length?'ALLE MODS INSTALLIERT!':done+'/'+zips.length+' OK',done===zips.length?'ok':'');
+  document.getElementById('btnInstall').disabled=false;
+}
+
+log('Bereit. Backend starten: node server.js','info');
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</body>
+</html>

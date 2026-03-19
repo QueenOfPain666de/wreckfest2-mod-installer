@@ -1,0 +1,35 @@
+{
+  "name": "wreckfest2-mod-installer",
+  "version": "1.0.0",
+  "description": "Wreckfest 2 Mod Installer — by QueenOfPain666 // ROTA",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build:win": "electron-builder --win --x64",
+    "build:linux": "electron-builder --linux --x64",
+    "build:all": "electron-builder --win --linux --x64"
+  },
+  "build": {
+    "appId": "gg.rota.wreckfest2-mod-installer",
+    "productName": "Wreckfest2ModInstaller",
+    "copyright": "QueenOfPain666 // ROTA",
+    "directories": { "output": "dist" },
+    "files": [
+      "main.js", "preload.js", "index.html",
+      "bg.jpg", "Midnight_Highway_Circuit.mp3", "icon.png"
+    ],
+    "win": {
+      "target": [{ "target": "portable", "arch": ["x64"] }],
+      "icon": "icon.png"
+    },
+    "linux": {
+      "target": ["AppImage"],
+      "icon": "icon.png",
+      "category": "Game"
+    }
+  },
+  "devDependencies": {
+    "electron": "^29.0.0",
+    "electron-builder": "^24.0.0"
+  }
+}

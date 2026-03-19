@@ -1,37 +1,77 @@
-## # Wreckfest 2 Mod Installer
+# WRECKFEST 2 — MOD INSTALLER
 
-First public version of the Wreckfest 2 Mod Installer.
+### by QueenOfPain666 // ROTA
 
-Built for simplicity and speed:
+Portable Mod Installer für Wreckfest 2.
 
-## Features
+ZIP reinziehen → installieren → fertig.
 
-* Drag & drop ZIP mods
-* Auto detect Wreckfest 2 path (Steam)
-* Manual path fallback
-* Mod preview before install
-* Optional backup before overwrite
-* Portable – no installation required
+Kein Setup. Kein Bullshit.
 
 ---
 
-## Notes
+## 🔥 FEATURES
 
-* Work in progress – expect updates
-* Feedback is welcome (bugs, ideas, edge cases)
-* If something breaks → tell me what you did 😄
-
----
-
-## Usage
-
-1. Drop your mod ZIPs or scan a folder
-2. Select your Wreckfest 2 data path
-3. Hit install
-
-Done.
+* Drag & Drop ZIP Mods
+* Auto Steam Path Detection
+* Manueller Pfad (Fallback)
+* Mod Vorschau vor Installation
+* Optionales Backup
+* Portable (kein Install nötig)
 
 ---
 
-No setup. No clutter. Just install your mods and send it.
+## 📦 DOWNLOAD
 
+Fertige Version gibt’s unter **Releases**.
+
+---
+
+## 🧪 STATUS
+
+Work in progress.
+Feedback ist willkommen.
+
+---
+
+## 🧠 WAS DIE APP MACHT
+
+* Installiert Mods direkt nach:
+  `steamapps/common/Wreckfest 2/data/`
+* Startet Backend intern (kein extra Terminal)
+* Native UI (Electron, frameless)
+* Musik & visuelle Effekte integriert
+
+---
+
+## 🛠️ BUILD (für Entwickler)
+
+### Voraussetzungen
+
+* Node.js 18+ — https://nodejs.org
+
+### Schritte
+
+```bash
+npm install
+npm run build:win
+npm run build:linux
+```
+
+---
+
+## 📁 DATEISTRUKTUR
+
+```
+main.js
+preload.js
+index.html
+bg.jpg
+Midnight_Highway_Circuit.mp3
+icon.png
+package.json
+```
+
+---
+
+*Kein isotonengetränk wurde beim Bauen verschüttet.*
