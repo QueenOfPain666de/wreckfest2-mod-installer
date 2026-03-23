@@ -89,8 +89,8 @@ body::before {
 /* ── APP WRAPPER ── */
 #app {
   position: relative; z-index:10;
-  max-width: 1000px; margin: 0 auto;
-  padding: 0 20px 8px;
+  max-width: 100%; margin: 0 auto;
+  padding: 0 24px 6px;
   height: calc(100vh - 32px);
   overflow: hidden;
   display: flex;
@@ -99,7 +99,7 @@ body::before {
 
 /* ── HEADER ── */
 header {
-  padding: 12px 0 4px;
+  padding: 6px 0 2px;
   text-align: center;
   position: relative;
   flex-shrink: 0;
@@ -110,54 +110,38 @@ header {
   font-size: 11px; letter-spacing: 8px;
   color: var(--cyan); opacity:.7;
   text-transform: uppercase;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
   animation: flickerIn 0.5s steps(1) 0.2s both;
 }
 
-h1 {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: clamp(42px, 7vw, 72px);
-  letter-spacing: 6px;
-  line-height: .88;
+h1 { display: none; } /* replaced by logo image */
+
+.logo-wrap {
   position: relative;
-  display: inline-block;
+  display: block;
+  text-align: center;
+  margin: 2px 0 0;
+  /* overflow hidden clips anything outside */
+  overflow: visible;
 }
 
-.h1-shadow {
-  position: absolute; inset:0;
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: inherit; letter-spacing:inherit; line-height:inherit;
-  color: var(--pink);
-  transform: translate(4px,4px);
-  opacity:.5;
-  z-index:-1;
-  pointer-events:none;
+/* The img is hidden — we draw it on canvas instead */
+.wf2logo { display: none; }
+
+#logoCanvas {
+  display: block;
+  margin: 0 auto;
+  /* no filter here — effects applied in canvas drawing */
 }
 
-.h1-main {
-  background: linear-gradient(180deg,
-    #ffffff 0%,
-    #ddaaff 20%,
-    #cc00ff 45%,
-    #ff00aa 72%,
-    #880088 100%
-  );
-  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
-  filter: drop-shadow(0 0 35px rgba(200,0,255,.8)) drop-shadow(0 0 80px rgba(255,0,150,.4));
-  animation: titleFlame 1.8s ease-in-out infinite alternate;
-}
 
-@keyframes titleFlame {
-  0% { filter: drop-shadow(0 0 25px rgba(200,0,255,.7)) drop-shadow(0 0 60px rgba(180,0,200,.35)); }
-  100% { filter: drop-shadow(0 0 50px rgba(255,0,200,1)) drop-shadow(0 0 100px rgba(200,0,255,.6)); }
-}
 
 .subtitle {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: clamp(12px,2vw,18px);
+  font-size: clamp(12px,2vw,16px);
   letter-spacing: 12px;
   color: var(--cyan);
-  margin-top: 2px;
+  margin-top: 1px;
   text-shadow: 0 0 25px rgba(0,238,255,.7), 0 0 60px rgba(0,238,255,.3);
   animation: neonPulse 2.5s ease-in-out infinite;
 }
@@ -168,7 +152,7 @@ h1 {
 
 /* ── SPEED LINES DIVIDER ── */
 .speed-divider {
-  position: relative; height: 18px; margin: 6px 0;
+  position: relative; height: 12px; margin: 3px 0;
   overflow: hidden; flex-shrink: 0;
 }
 .speed-divider canvas { width:100%; height:100%; }
@@ -176,7 +160,7 @@ h1 {
 /* ── AUDIO STATUS ── */
 .audio-bar {
   display: flex; align-items: center; gap: 14px;
-  padding: 7px 16px; margin-bottom: 10px;
+  padding: 5px 16px; margin-bottom: 6px;
   background: rgba(0,0,0,.65);
   border: 1px solid rgba(0,200,255,.2);
   border-top: 2px solid rgba(0,220,255,.45);
@@ -201,20 +185,13 @@ h1 {
   width:4px; border-radius:1px 1px 0 0;
   background: linear-gradient(180deg, #00eeff, #cc00ff, #ff00aa);
   transform-origin:bottom;
-  animation: eqAnim 0.35s ease-in-out infinite alternate;
+  height: 4px;
+  transition: height 0.06s ease;
 }
-.eq-b:nth-child(1){height:22px;animation-delay:0s}
-.eq-b:nth-child(2){height:22px;animation-delay:.04s}
-.eq-b:nth-child(3){height:22px;animation-delay:.08s}
-.eq-b:nth-child(4){height:22px;animation-delay:.12s}
-.eq-b:nth-child(5){height:22px;animation-delay:.16s}
-.eq-b:nth-child(6){height:22px;animation-delay:.20s}
-.eq-b:nth-child(7){height:22px;animation-delay:.24s}
-.eq-b:nth-child(8){height:22px;animation-delay:.28s}
-.eq-b:nth-child(9){height:22px;animation-delay:.32s}
-.eq-b:nth-child(10){height:22px;animation-delay:.36s}
-.eq-b:nth-child(11){height:22px;animation-delay:.40s}
-.eq-b:nth-child(12){height:22px;animation-delay:.44s}
+.eq-b:nth-child(1){} .eq-b:nth-child(2){} .eq-b:nth-child(3){}
+.eq-b:nth-child(4){} .eq-b:nth-child(5){} .eq-b:nth-child(6){}
+.eq-b:nth-child(7){} .eq-b:nth-child(8){} .eq-b:nth-child(9){}
+.eq-b:nth-child(10){} .eq-b:nth-child(11){} .eq-b:nth-child(12){}
 @keyframes eqAnim { 0%{transform:scaleY(.1)} 100%{transform:scaleY(1)} }
 
 .audio-track-name {
@@ -250,8 +227,8 @@ input[type=range].vol-slider::-webkit-slider-thumb {
   border: 1px solid var(--panel-border);
   border-top: 2px solid var(--panel-top);
   border-radius: 2px;
-  padding: 14px 18px;
-  margin-bottom: 10px;
+  padding: 8px 14px;
+  margin-bottom: 6px;
   position: relative;
   overflow: hidden;
   backdrop-filter: blur(6px);
@@ -275,7 +252,7 @@ input[type=range].vol-slider::-webkit-slider-thumb {
 
 .section-tag {
   font-size:9px; letter-spacing:5px; color:var(--acc3);
-  text-transform:uppercase; margin-bottom:8px;
+  text-transform:uppercase; margin-bottom:5px;
   display:flex; align-items:center; gap:12px;
   text-shadow:0 0 10px rgba(0,238,255,.5);
 }
@@ -285,9 +262,9 @@ input[type=range].vol-slider::-webkit-slider-thumb {
 /* ── INPUTS ── */
 .field-lbl {
   display:block; font-size:9px; letter-spacing:3px;
-  color:var(--muted); text-transform:uppercase; margin-bottom:5px;
+  color:var(--muted); text-transform:uppercase; margin-bottom:3px;
 }
-.field-row { display:flex; gap:7px; margin-bottom:8px; }
+.field-row { display:flex; gap:7px; margin-bottom:5px; }
 
 input[type=text] {
   flex:1; background:rgba(0,0,0,.55);
@@ -295,7 +272,7 @@ input[type=text] {
   border-bottom-color:rgba(0,220,255,.4);
   border-radius:2px; color:var(--text);
   font-family:'Share Tech Mono',monospace; font-size:12px;
-  padding:9px 14px; outline:none;
+  padding:6px 14px; outline:none;
   transition: border-color .2s, box-shadow .2s; letter-spacing:1px;
 }
 input[type=text]::placeholder { color:rgba(180,140,220,.3); }
@@ -308,7 +285,7 @@ input[type=text]:focus {
   background:rgba(0,0,0,.55);
   border:1px solid rgba(0,200,255,.3);
   color:var(--acc3); cursor:pointer;
-  padding:9px 16px; border-radius:2px;
+  padding:6px 16px; border-radius:2px;
   font-family:'Share Tech Mono',monospace; font-size:11px; letter-spacing:2px;
   white-space:nowrap; transition:all .15s;
   text-shadow:0 0 8px rgba(0,238,255,.4);
@@ -323,9 +300,9 @@ input[type=text]:focus {
 /* ── DROP ZONE ── */
 .drop-zone {
   border:2px dashed rgba(200,0,255,.2);
-  border-radius:3px; padding:10px;
+  border-radius:3px; padding:6px;
   text-align:center; cursor:pointer;
-  transition:all .2s; margin-bottom:8px;
+  transition:all .2s; margin-bottom:5px;
   position:relative; overflow:hidden;
 }
 .drop-zone:hover, .drop-zone.over {
@@ -355,7 +332,7 @@ input[type=text]:focus {
 .btn-tiny:hover { border-color:rgba(0,238,255,.5); color:var(--acc3); }
 
 .zip-list {
-  list-style:none; max-height:130px; overflow-y:auto;
+  list-style:none; max-height:110px; overflow-y:auto;
   border:1px solid rgba(200,0,255,.12); border-radius:2px;
 }
 .zip-list::-webkit-scrollbar { width:3px; }
@@ -398,17 +375,17 @@ input[type=text]:focus {
 .btn-prev:hover { border-color:var(--acc3); color:var(--acc3); box-shadow:0 0 8px rgba(0,238,255,.2); }
 
 /* ── DEST STATUS ── */
-.dest-status { font-size:10px; letter-spacing:1px; color:var(--muted); margin-top:5px; }
+.dest-status { font-size:10px; letter-spacing:1px; color:var(--muted); margin-top:3px; }
 .sdot { width:6px; height:6px; border-radius:50%; display:inline-block; margin-right:5px; }
 .sdot.ok { background:#39ff14; box-shadow:0 0 6px #39ff14; }
 .sdot.warn { background:#ffcc00; box-shadow:0 0 6px #ffcc00; }
 .sdot.err { background:var(--acc1); box-shadow:0 0 6px var(--acc1); }
 
 .path-preview {
-  margin-top:8px; background:rgba(0,0,0,.5);
+  margin-top:5px; background:rgba(0,0,0,.5);
   border:1px solid rgba(0,200,255,.12); border-left:2px solid rgba(0,220,255,.4);
-  padding:8px 12px; border-radius:2px;
-  font-size:11px; line-height:1.7; letter-spacing:.5px;
+  padding:5px 12px; border-radius:2px;
+  font-size:11px; line-height:1.6; letter-spacing:.5px;
 }
 .pp-key { color:rgba(0,220,255,.55); margin-right:8px; }
 .pp-val { color:rgba(180,160,220,.55); }
@@ -418,15 +395,15 @@ input[type=text]:focus {
 .opt-row {
   display:flex; align-items:center; gap:9px;
   font-size:10px; letter-spacing:2px; color:var(--muted);
-  cursor:pointer; margin-bottom:5px; transition:color .15s;
+  cursor:pointer; margin-bottom:2px; transition:color .15s;
 }
 .opt-row:hover { color:var(--acc3); }
 .opt-row input { accent-color:var(--acc3); }
 
 /* ── INSTALL BUTTON ── */
 .btn-install {
-  width:100%; padding:12px;
-  font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:8px;
+  width:100%; padding:9px;
+  font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:8px;
   color:#fff;
   background: linear-gradient(135deg, #6600cc 0%, #cc00ff 35%, #ff00aa 60%, #6600cc 100%);
   background-size:300% 300%;
@@ -472,11 +449,11 @@ input[type=text]:focus {
 
 /* ── LOG ── */
 .logbox {
-  display:none; margin-top:6px;
+  display:none; margin-top:4px;
   background:rgba(0,0,0,.7);
   border:1px solid rgba(0,200,255,.1);
-  border-radius:2px; padding:6px 10px;
-  font-size:10px; max-height:60px; overflow-y:auto;
+  border-radius:2px; padding:4px 10px;
+  font-size:10px; max-height:44px; overflow-y:auto;
   line-height:1.6;
 }
 .logbox.on { display:block; }
@@ -568,17 +545,18 @@ input[type=text]:focus {
 
 /* ── TABS ── */
 .tab-nav {
-  display:flex; gap:0; margin-bottom:10px; flex-shrink:0;
+  display:flex; gap:0; margin-bottom:6px; flex-shrink:0;
   border-bottom:2px solid rgba(0,200,255,.2);
 }
 .tab-btn {
   background:none; border:none; border-bottom:2px solid transparent;
-  margin-bottom:-2px; padding:7px 22px;
+  margin-bottom:-2px; padding:5px 22px;
   font-family:'Bebas Neue',sans-serif; font-size:16px; letter-spacing:4px;
-  color:rgba(180,160,220,.45); cursor:pointer; transition:all .2s;
+  color:rgba(200,185,240,.75); cursor:pointer; transition:all .2s;
   position:relative;
+  text-shadow: 0 0 6px rgba(180,140,255,.3);
 }
-.tab-btn:hover { color:rgba(200,180,255,.7); }
+.tab-btn:hover { color:rgba(220,200,255,.9); text-shadow: 0 0 10px rgba(200,160,255,.5); }
 .tab-btn.active {
   color:var(--acc3);
   border-bottom-color:var(--acc3);
@@ -659,8 +637,28 @@ input[type=text]:focus {
 }
 .cs-info span { color:rgba(0,238,255,.7); }
 
+/* ── ABOUT / DEMOSCENE PAGER ── */
+.demo-wrap {
+  flex:1; display:flex; flex-direction:column; overflow:hidden; gap:0;
+}
+.demo-star-strip {
+  height:28px; flex-shrink:0; overflow:hidden;
+  background:rgba(0,0,6,.95);
+  border:1px solid rgba(0,200,255,.12); border-bottom:none;
+}
+.demo-star-strip canvas { width:100%; height:100%; display:block; }
+
+.demo-pager-wrap {
+  flex:1; overflow:hidden;
+  background:rgba(0,0,6,.97);
+  border:1px solid rgba(0,200,255,.18);
+  border-top:2px solid rgba(0,200,255,.4);
+  position:relative;
+}
+.demo-pager-wrap canvas { width:100%; height:100%; display:block; }
+
 /* ── LAYOUT ── */
-.two-col { display:grid; grid-template-columns:1fr 1fr; gap:10px; flex-shrink:0; }
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:6px; flex-shrink:0; }
 @media(max-width:640px){ .two-col{grid-template-columns:1fr} h1{font-size:42px} }
 
 @keyframes flickerIn {
@@ -676,12 +674,24 @@ input[type=text]:focus {
 <div class="vignette"></div>
 
 <div id="app">
+
+  <!-- UPDATE BANNER (hidden until update found) -->
+  <div id="updateBanner" style="display:none;position:relative;z-index:50;margin-bottom:8px;padding:8px 16px;background:rgba(0,0,0,.75);border:1px solid rgba(57,255,20,.35);border-left:3px solid #39ff14;border-radius:2px;display:none;align-items:center;gap:14px;flex-shrink:0">
+    <div style="flex:1;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:1px">
+      <span style="color:#39ff14;text-shadow:0 0 8px rgba(57,255,20,.5)">⬆ UPDATE VERFÜGBAR</span>
+      <span id="updateVersion" style="color:rgba(180,255,180,.7);margin-left:10px"></span>
+    </div>
+    <div id="updateProgress" style="display:none;font-family:'Share Tech Mono',monospace;font-size:10px;color:rgba(57,255,20,.7);letter-spacing:2px">LADE... <span id="updatePct">0</span>%</div>
+    <button id="btnUpdate" style="background:rgba(57,255,20,.1);border:1px solid rgba(57,255,20,.4);color:#39ff14;font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:3px;padding:5px 18px;border-radius:2px;cursor:pointer;transition:all .15s" onmouseover="this.style.background='rgba(57,255,20,.2)'" onmouseout="this.style.background='rgba(57,255,20,.1)'">JETZT UPDATEN</button>
+    <button onclick="document.getElementById('updateBanner').style.display='none'" style="background:none;border:none;color:rgba(180,255,180,.4);font-size:16px;cursor:pointer;padding:0 4px">✕</button>
+  </div>
   <header>
     <div class="pre-title">▸ ROTA COMMUNITY // QueenOfPain666</div>
-    <h1>
-      <div class="h1-shadow">WRECKFEST 2</div>
-      <div class="h1-main">WRECKFEST 2</div>
-    </h1>
+    <div class="logo-wrap" style="position:relative;display:inline-block">
+      <img src="wf2logo.png" class="wf2logo" id="wf2logoSrc" alt="Wreckfest 2">
+      <canvas id="logoCanvas"></canvas>
+      <span style="position:absolute;bottom:2px;right:4px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;color:rgba(0,238,255,0.55);pointer-events:none;user-select:none">v1.0.0</span>
+    </div>
     <div class="subtitle">MOD INSTALLER</div>
   </header>
 
@@ -697,7 +707,7 @@ input[type=text]:focus {
       <div class="eq-b"></div><div class="eq-b"></div><div class="eq-b"></div>
       <div class="eq-b"></div><div class="eq-b"></div><div class="eq-b"></div>
     </div>
-    <div class="audio-track-name" id="trackName">MIDNIGHT HIGHWAY CIRCUIT</div>
+    <div class="audio-track-name" id="trackName">QueenOfPain666 - Mod Installer Theme (with Vocals)</div>
     <div class="audio-controls">
       <input type="range" class="vol-slider" id="volSlider" min="0" max="1" step="0.05" value="0.55">
       <button class="btn-audio" id="btnToggleMusic">⏸ MUTE</button>
@@ -709,6 +719,7 @@ input[type=text]:focus {
   <div class="tab-nav">
     <button class="tab-btn active" id="tabBtnMods" onclick="switchTab('mods')">MODS</button>
     <button class="tab-btn" id="tabBtnLivery" onclick="switchTab('livery')">LIVERYS <span class="tab-cs">SOON</span></button>
+    <button class="tab-btn" id="tabBtnAbout" onclick="switchTab('about')">ABOUT</button>
   </div>
 
   <!-- TAB: MODS -->
@@ -769,7 +780,7 @@ input[type=text]:focus {
           <div><span class="pp-key">ZIEL &nbsp;</span><span class="pp-fin">data/ &nbsp;← Mods landen hier</span></div>
         </div>
 
-        <div style="margin-top:10px">
+        <div style="margin-top:6px">
           <div class="section-tag" style="font-size:9px">OPTIONEN</div>
           <label class="opt-row"><input type="checkbox" id="optBak"> BACKUP VOR ÜBERSCHREIBEN</label>
           <label class="opt-row"><input type="checkbox" id="optDel"> ZIP NACH INSTALL LÖSCHEN</label>
@@ -830,7 +841,19 @@ input[type=text]:focus {
     </div>
   </div>
 
-<!-- MODAL -->
+  <!-- TAB: ABOUT -->
+  <div class="tab-panel" id="tabAbout">
+    <div class="demo-wrap">
+      <!-- tiny starfield strip at top -->
+      <div class="demo-star-strip">
+        <canvas id="demoStars"></canvas>
+      </div>
+      <!-- pager canvas — text scrolls upward -->
+      <div class="demo-pager-wrap">
+        <canvas id="demoScroller"></canvas>
+      </div>
+    </div>
+  </div>
 <div class="modal-bg" id="modalBg">
   <div class="modal">
     <button class="modal-close" onclick="closeModal()">✕ CLOSE</button>
@@ -1010,6 +1033,64 @@ document.getElementById('btnToggleMusic').addEventListener('click', () => {
   bgAudio.muted = muted;
   document.getElementById('btnToggleMusic').textContent = muted ? '▶ SOUND' : '⏸ MUTE';
 });
+
+// ── REAL-TIME EQ ANALYSER ─────────────────────────────────────────────────
+(function() {
+  const eqBars = Array.from(document.querySelectorAll('.eq-b'));
+  const NUM = eqBars.length; // 12 bars
+  let audioCtx = null, analyser = null, source = null, dataArr = null;
+  let eqRAF = null;
+  let fallback = new Float32Array(NUM).fill(0);
+
+  function initAnalyser() {
+    if (audioCtx) return;
+    try {
+      audioCtx  = new (window.AudioContext || window.webkitAudioContext)();
+      analyser  = audioCtx.createAnalyser();
+      analyser.fftSize = 64;
+      analyser.smoothingTimeConstant = 0.72;
+      source    = audioCtx.createMediaElementSource(bgAudio);
+      source.connect(analyser);
+      analyser.connect(audioCtx.destination);
+      dataArr   = new Uint8Array(analyser.frequencyBinCount); // 32 bins
+    } catch(e) {}
+  }
+
+  function tickEQ() {
+    eqRAF = requestAnimationFrame(tickEQ);
+    if (analyser && dataArr) {
+      analyser.getByteFrequencyData(dataArr);
+      // Map 32 bins → 12 bars (skip the top few noisy bins)
+      const usable = Math.min(dataArr.length, 28);
+      for (let i = 0; i < NUM; i++) {
+        const binIdx = Math.floor(i * usable / NUM);
+        const raw    = dataArr[binIdx] / 255; // 0..1
+        // boost low values so quiet passages still show something
+        const boosted = Math.pow(raw, 0.6);
+        const h = Math.max(2, Math.round(boosted * 22));
+        eqBars[i].style.height = h + 'px';
+      }
+    } else {
+      // fallback: gentle fake sine wave when analyser not ready
+      const t = Date.now() / 300;
+      for (let i = 0; i < NUM; i++) {
+        const v = (Math.sin(t + i * 0.6) * 0.5 + 0.5) * 0.4;
+        eqBars[i].style.height = Math.max(2, Math.round(v * 22)) + 'px';
+      }
+    }
+  }
+
+  // Init analyser on first interaction (browser autoplay policy)
+  function tryInit() {
+    initAnalyser();
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    if (!eqRAF) tickEQ();
+  }
+  document.addEventListener('click', tryInit, { once: true });
+  bgAudio.addEventListener('play', tryInit, { once: true });
+  // Start fallback animation immediately
+  tickEQ();
+})();
 
 // ╔══════════════════════════════════════════════════════╗
 // ║  APP LOGIC                                           ║
@@ -1315,7 +1396,695 @@ window.cfChoose = function(choice) {
   if(window._cfResolve) { window._cfResolve(choice); window._cfResolve = null; }
 };
 
+// ── LOGO CANVAS RENDERER ─────────────────────────────────────────────────────
+(function() {
+  const canvas = document.getElementById('logoCanvas');
+  const img    = document.getElementById('wf2logoSrc');
+  if(!canvas || !img) return;
+
+  const TARGET_H = 130;
+  let glowT = 0;
+  let raf   = null;
+
+  function setup() {
+    const ratio = TARGET_H / img.naturalHeight;
+    const W = Math.round(img.naturalWidth * ratio);
+    const H = TARGET_H;
+    canvas.width  = W;
+    canvas.height = H;
+    canvas.style.width  = W + 'px';
+    canvas.style.height = H + 'px';
+    draw(W, H);
+  }
+
+  function draw(W, H) {
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, W, H);
+    // Plain logo — no effects
+    ctx.drawImage(img, 0, 0, W, H);
+    // static — no animation loop needed
+  }
+
+  if(img.complete && img.naturalWidth > 0) setup();
+  else img.onload = setup;
+})();
+
 log('Bereit.','info');
+
+
+// ── DEMOSCENE ABOUT ──────────────────────────────────────────────────────────
+(function() {
+  'use strict';
+
+  // ── PAGER CONTENT ────────────────────────────────────────────────────────
+  // Each page is an array of lines. Pages show one at a time, fly in from right.
+  const PAGES = [
+    // Page 1a — program info
+    [
+      { t:'border' },
+      { t:'kv', k:'PROGRAM',    v:'WRECKFEST 2 MOD INSTALLER',  vc:'#00eeff' },
+      { t:'kv', k:'VERSION',    v:'1.0.0',                      vc:'#ffdd44' },
+      { t:'kv', k:'PLATFORM',   v:'WINDOWS 64BIT / PORTABLE',   vc:'#bb44ff' },
+      { t:'kv', k:'RELEASED',   v:'2026 // IRGENDWANN NACHTS',  vc:'#00eeff' },
+      { t:'kv', k:'LANGUAGE',   v:'JAVASCRIPT / ELECTRON',      vc:'#bb44ff' },
+      { t:'empty' },
+      { t:'kv', k:'PROGRAMMER', v:'QUEENOFPAIN666',             vc:'#ff00aa' },
+      { t:'kv', k:'DESIGN',     v:'QUEENOFPAIN666',             vc:'#ff00aa' },
+      { t:'kv', k:'MUSIC',      v:'QUEENOFPAIN666',             vc:'#ff00aa' },
+      { t:'kv', k:'CHAOS MGT.', v:'RAGELADY',                   vc:'#ffdd44' },
+      { t:'kv', k:'TESTING',    v:'RAGELADY (UNFREIWILLIG)',     vc:'#ffdd44' },
+      { t:'border' },
+    ],
+    // Page 2 — about
+    [
+      { t:'border' },
+      { t:'center', s:"WENNS NICH ROCKT ISSES FUER'N ARSCH",   c:'#ff00aa' },
+      { t:'empty' },
+      { t:'center', s:'LIEBEVOLL. LEICHT VERSCHOBEN.',          c:'#00eeff' },
+      { t:'center', s:'VIEL HERZ. WENIG SCHLAF.',               c:'#bb44ff' },
+      { t:'empty' },
+      { t:'center', s:'ICH BIN EINE CHAOTIN MIT STIL',          c:'dim' },
+      { t:'center', s:'PROGRAMMIERE GERN. BRING LEUTE ZUM LACHEN.', c:'dim' },
+      { t:'center', s:'FUER FAST JEDE SCHANDTAT ZU HABEN.',     c:'dim' },
+      { t:'empty' },
+      { t:'center', s:'ALSO HAB ICH EINEN NEUEN GEMACHT.',      c:'#ffdd44' },
+      { t:'center', s:'UM 2 UHR. MIT ISOTONENGETRAENK.',        c:'dim' },
+      { t:'center', s:'SCHLAFEN IST UEBERBEWERTET.',            c:'#ff00aa' },
+      { t:'border' },
+    ],
+    // Page 3 — greetings
+    [
+      { t:'border' },
+      { t:'center', s:'* GREETINGS *',                          c:'#00eeff' },
+      { t:'empty' },
+      { t:'kv', k:'RAGELADY',    v:'MEINE FRAU // CO-PILOTIN',  vc:'#ff00aa' },
+      { t:'kv', k:'ROTA CREW',   v:'RISE OF THE ASYLUM',        vc:'#00eeff' },
+      { t:'kv', k:'WF2 DEVS',    v:'BESTES DEMOLITION GAME',    vc:'#bb44ff' },
+      { t:'kv', k:'3AM DRIVERS', v:'IHR WISST WER IHR SEID',   vc:'#ffdd44' },
+      { t:'kv', k:'ISOTONENGETR',v:'OHNE EUCH KEIN TOOL',       vc:'#00eeff' },
+      { t:'empty' },
+      { t:'center', s:'* FEATURES *',                           c:'#bb44ff' },
+      { t:'empty' },
+      { t:'kv', k:'STEAM',       v:'ALLE LAUFWERKE / LIBS',     vc:'#00eeff' },
+      { t:'kv', k:'ZIP',         v:'DATA/ AUTO ABSCHNEIDEN',    vc:'#00eeff' },
+      { t:'kv', k:'KONFLIKTE',   v:'DIALOG VOR UEBERSCHREIBEN', vc:'#ffdd44' },
+      { t:'kv', k:'AUTO UPDATE', v:'VIA GITHUB RELEASES',       vc:'#bb44ff' },
+      { t:'kv', k:'LIVERYS',     v:'KOMMT -- BIN NICHT FAUL',   vc:'#ff00aa' },
+      { t:'border' },
+    ],
+    // Page 4 — contact
+    [
+      { t:'border' },
+      { t:'center', s:'* FIND ME *',                            c:'#ffdd44' },
+      { t:'empty' },
+      { t:'kv', k:'TWITCH',  v:'TWITCH.TV/QUEENOFPAIN666',      vc:'#ff00aa' },
+      { t:'kv', k:'BLUESKY', v:'QUEENOFPAIN666.BSKY.SOCIAL',    vc:'#00eeff' },
+      { t:'kv', k:'GITHUB',  v:'GITHUB.COM/QUEENOFPAIN666DE',   vc:'#bb44ff' },
+      { t:'border' },
+    ],
+    // Page 5 — ASCII logo QoP + 666
+    [
+      { t:'empty' },
+      { t:'ascii', s:" .od88bo.               88888888b. " },
+      { t:'ascii', s:"88P    Y8b   .od88bo.   88      88 " },
+      { t:'ascii', s:"88      88  88      88  88      88 " },
+      { t:'ascii', s:"88      88  88      88  88888888P  " },
+      { t:'ascii', s:"88    ,d88  Y8.    .8P  88         " },
+      { t:'ascii', s:"YboodP Y88   .YboodP.   88         " },
+      { t:'ascii', s:"        88              88         " },
+      { t:'empty' },
+      { t:'ascii', s:"   .od6bo.    .od6bo.    .od6bo.   ", c:'#bb44ff' },
+      { t:'ascii', s:"  68P        68P        68P        ", c:'#bb44ff' },
+      { t:'ascii', s:"  68 d8b.    68 d8b.    68 d8b.    ", c:'#bb44ff' },
+      { t:'ascii', s:"  68   Y8.   68   Y8.   68   Y8.   ", c:'#bb44ff' },
+      { t:'ascii', s:"  Y8.  d8P   Y8.  d8P   Y8.  d8P  ", c:'#bb44ff' },
+      { t:'ascii', s:"   .od88P     .od88P     .od88P    ", c:'#bb44ff' },
+      { t:'empty' },
+      { t:'center', s:'KEEP WRECKING // STAY CHAOTIC',    c:'#ffdd44' },
+    ],
+    // Page 6 — QoP image
+    [ { t:'image', src:'qop_image.png' } ],
+  ];
+
+  // ── PRELOAD PAGER IMAGES ──────────────────────────────────────────────────
+  const _pagerImages = {};
+  PAGES.forEach(page => {
+    page.forEach(line => {
+      if(line.t === 'image' && line.src && !_pagerImages[line.src]) {
+        const img = new Image();
+        img.src = line.src;
+        _pagerImages[line.src] = img;
+      }
+    });
+  });
+
+  // ── CONSTANTS ─────────────────────────────────────────────────────────────
+  const FONT      = 'bold 15px "Share Tech Mono",monospace';
+  const FONT_ASC  = 'bold 16px "Share Tech Mono",monospace';
+  const LINE_H    = 26;
+  const COL_W     = 13;          // label column width (chars)
+  const C_DIM     = 'rgba(140,120,175,0.38)';
+  const C_BORDER  = 'rgba(0,180,220,0.22)';
+  const FLY_FRAMES  = 60;        // frames for fly-in
+  const HOLD_FRAMES = 220;       // frames to hold
+  const FLYOUT_FRAMES = 50;      // frames for fly-out
+
+  // ── STATE ─────────────────────────────────────────────────────────────────
+  let pageIdx   = 0;
+  let phase     = 'idle';
+  let phaseT    = 0;
+  let pulseT    = 0;
+  let copperT   = 0;
+  let pRAF      = null;
+  let sRAF      = null;
+  let stars     = null;
+  let pCanvas   = null;
+  let sCanvas   = null;
+
+  // ── HELPERS ───────────────────────────────────────────────────────────────
+  function easeOut(t) { return 1 - Math.pow(1 - Math.min(t,1), 3); }
+  function easeIn(t)  { return Math.pow(Math.min(t,1), 2); }
+
+  function shadowFor(c) {
+    if(c==='#00eeff') return '#003344';
+    if(c==='#ff00aa') return '#330018';
+    if(c==='#bb44ff') return '#1a0033';
+    if(c==='#ffdd44') return '#332200';
+    return '#111111';
+  }
+
+  // 3D glow text — shadow offset + multi-pass glow + specular
+  function draw3D(ctx, text, x, y, color, align) {
+    ctx.textAlign = align || 'center';
+    ctx.font      = FONT;
+    // shadow
+    ctx.shadowBlur  = 0;
+    ctx.fillStyle   = shadowFor(color);
+    ctx.globalAlpha = 0.5;
+    ctx.fillText(text, x+2, y+2);
+    // glow passes — toned way down
+    ctx.fillStyle   = color;
+    ctx.shadowColor = color;
+    ctx.shadowBlur  = 16; ctx.globalAlpha = 0.12; ctx.fillText(text, x, y);
+    ctx.shadowBlur  =  7; ctx.globalAlpha = 0.28; ctx.fillText(text, x, y);
+    ctx.shadowBlur  =  2; ctx.globalAlpha = 0.60; ctx.fillText(text, x, y);
+    // base text — not full white
+    ctx.shadowBlur  =  0; ctx.globalAlpha = 0.78; ctx.fillText(text, x, y);
+    ctx.globalAlpha = 1;
+  }
+
+  function drawASCII(ctx, text, x, y, color) {
+    color = color || '#00eeff';
+    const p = (Math.sin(pulseT * 2.5) * 0.5 + 0.5);
+    ctx.textAlign = 'center';
+    ctx.font      = FONT_ASC;
+    ctx.fillStyle  = shadowFor(color);
+    ctx.shadowBlur = 0; ctx.globalAlpha = 0.5;
+    ctx.fillText(text, x+2, y+2);
+    ctx.fillStyle   = color;
+    ctx.shadowColor = color;
+    ctx.shadowBlur  = 10 + p*18; ctx.globalAlpha = 0.1 + p*0.15; ctx.fillText(text, x, y);
+    ctx.shadowBlur  =  4 + p*8;  ctx.globalAlpha = 0.3 + p*0.2;  ctx.fillText(text, x, y);
+    ctx.shadowBlur  =  1;        ctx.globalAlpha = 0.65 + p*0.08; ctx.fillText(text, x, y);
+    ctx.globalAlpha = 1;
+    ctx.shadowBlur  = 0;
+    ctx.font = FONT;
+  }
+
+  function drawLine(ctx, line, W, y) {
+    ctx.font          = FONT;
+    ctx.textBaseline  = 'middle';
+    ctx.shadowBlur    = 0;
+    ctx.globalAlpha   = 1;
+
+    switch(line.t) {
+      case 'border': {
+        const dashes = '\u2500'.repeat(46);
+        ctx.textAlign   = 'center';
+        ctx.fillStyle   = C_BORDER;
+        ctx.shadowColor = '#00eeff';
+        ctx.shadowBlur  = 8; ctx.globalAlpha = 0.35;
+        ctx.fillText('* '+dashes+' *', W/2, y);
+        ctx.shadowBlur  = 0; ctx.globalAlpha = 1;
+        ctx.fillText('* '+dashes+' *', W/2, y);
+        break;
+      }
+      case 'kv': {
+        ctx.font = FONT;
+        const label  = line.k.padEnd(COL_W, ' ');
+        const sep    = ' : ';
+        const labelSepW = ctx.measureText(label + sep).width;
+        // fixed anchor: place the colon always at same x
+        // use a reference max-width row to find the block's left edge
+        const refW   = ctx.measureText('M'.repeat(COL_W) + sep + 'M'.repeat(22)).width;
+        const sx     = W/2 - refW/2;
+        ctx.textAlign  = 'left';
+        ctx.fillStyle  = C_DIM;
+        ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+        ctx.fillText(label + sep, sx, y);
+        const vc = line.vc || '#00eeff';
+        draw3D(ctx, line.v, sx + labelSepW, y, vc, 'left');
+        break;
+      }
+      case 'center': {
+        if(line.c === 'dim') {
+          ctx.textAlign  = 'center';
+          ctx.fillStyle  = C_DIM;
+          ctx.shadowBlur = 0;
+          ctx.fillStyle  = '#050505'; ctx.fillText(line.s, W/2+1, y+1);
+          ctx.fillStyle  = C_DIM;    ctx.fillText(line.s, W/2,   y);
+        } else {
+          draw3D(ctx, line.s, W/2, y, line.c, 'center');
+        }
+        break;
+      }
+      case 'ascii': {
+        const ac = line.c || '#00eeff';
+        drawASCII(ctx, line.s, W/2, y, ac);
+        break;
+      }
+      case 'empty': break;
+    }
+    ctx.globalAlpha = 1;
+    ctx.shadowBlur  = 0;
+  }
+
+  const COLORS_P = ['#00eeff','#cc00ff','#ff00aa','#bb44ff','#ffdd44','#ffffff'];
+  const GLOW_MAP = {
+    '#00eeff': 'rgba(0,238,255,',
+    '#cc00ff': 'rgba(204,0,255,',
+    '#ff00aa': 'rgba(255,0,170,',
+    '#bb44ff': 'rgba(187,68,255,',
+    '#ffdd44': 'rgba(255,221,68,',
+    '#ffffff': 'rgba(255,255,255,',
+  };
+  let particles = [];
+
+  function spawnParticle(W, H) {
+    const c = COLORS_P[Math.floor(Math.random() * COLORS_P.length)];
+    particles.push({
+      x:    W * 0.05 + Math.random() * W * 0.9,
+      y:    H + 4,
+      vx:   (Math.random() - 0.5) * 1.1,
+      vy:   -(Math.random() * 2.8 + 0.7),
+      life: 1,
+      decay: 0.006 + Math.random() * 0.009,
+      size: Math.random() * 3.0 + 0.6,
+      color: c,
+      glow: GLOW_MAP[c] || 'rgba(255,255,255,',
+      wobble: Math.random() * Math.PI * 2,
+      wobbleSpeed: 0.04 + Math.random() * 0.04,
+    });
+  }
+
+  // ── ROTO-ZOOM TUNNEL ─────────────────────────────────────────────────────
+  let rotoT    = 0;
+  let rotoCanvas = null;
+
+  function drawRotoZoom(ctx, W, H) {
+    rotoT += 0.012;
+
+    // Use a temp canvas for the tunnel texture
+    if(!rotoCanvas || rotoCanvas.width !== W) {
+      rotoCanvas = document.createElement('canvas');
+      rotoCanvas.width = W; rotoCanvas.height = H;
+    }
+    const rx = rotoCanvas.getContext('2d');
+
+    // Roto-zoom: map each screen pixel to a rotating/zooming coordinate space
+    // Then color based on checkerboard/stripe pattern in that space
+    const imgData = rx.createImageData(W, H);
+    const d = imgData.data;
+    const cx = W / 2, cy = H / 2;
+    const cosA = Math.cos(rotoT * 0.4);
+    const sinA = Math.sin(rotoT * 0.4);
+    const zoom  = 0.012 + 0.006 * Math.sin(rotoT * 0.7); // breathing zoom
+
+    for(let py = 0; py < H; py += 2) {
+      for(let px = 0; px < W; px += 2) {
+        const dx = px - cx, dy = py - cy;
+        // rotate + zoom
+        const u = (dx * cosA - dy * sinA) * zoom + rotoT * 0.3;
+        const v = (dx * sinA + dy * cosA) * zoom + rotoT * 0.2;
+        // stripe/checker pattern
+        const stripe = Math.sin(u * 8) * Math.sin(v * 8);
+        const dist   = Math.sqrt(dx*dx + dy*dy) / (Math.max(W,H) * 0.5);
+        const n      = (stripe * 0.5 + 0.5) * (1 - dist * 0.7);
+        // color: dark purple/blue/cyan palette
+        const r = Math.floor(n * 30  + Math.sin(rotoT + u) * 12);
+        const g = Math.floor(n * 8);
+        const b = Math.floor(n * 70  + Math.cos(rotoT + v) * 25 + 15);
+        const i = (py * W + px) * 4;
+        d[i]=Math.max(0,r); d[i+1]=Math.max(0,g); d[i+2]=Math.max(0,b); d[i+3]=200;
+        if(px+1 < W){ d[i+4]=d[i]; d[i+5]=d[i+1]; d[i+6]=d[i+2]; d[i+7]=d[i+3]; }
+        if(py+1 < H){
+          const i2=(py+1)*W*4+px*4;
+          d[i2]=d[i]; d[i2+1]=d[i+1]; d[i2+2]=d[i+2]; d[i2+3]=d[i+3];
+          if(px+1<W){ d[i2+4]=d[i]; d[i2+5]=d[i+1]; d[i2+6]=d[i+2]; d[i2+7]=d[i+3]; }
+        }
+      }
+    }
+    rx.putImageData(imgData, 0, 0);
+
+    // draw tunnel — very dark so particles + text pop
+    ctx.fillStyle = 'rgba(1,0,6,1)';
+    ctx.fillRect(0, 0, W, H);
+    ctx.globalAlpha = 0.28;
+    ctx.drawImage(rotoCanvas, 0, 0);
+    ctx.globalAlpha = 1;
+  }
+
+  function drawParticles(ctx, W, H) {
+    drawRotoZoom(ctx, W, H);
+
+    if(Math.random() < 0.75) spawnParticle(W, H);
+    if(Math.random() < 0.25) spawnParticle(W, H);
+    particles = particles.filter(p => p.life > 0);
+    if(particles.length > 420) particles.splice(0, particles.length - 420);
+
+    particles.forEach(p => {
+      p.wobble += p.wobbleSpeed;
+      p.vx     += Math.sin(p.wobble) * 0.025;
+      p.vy     -= 0.006;
+      p.x      += p.vx;
+      p.y      += p.vy;
+      p.life   -= p.decay;
+      const a = Math.max(0, p.life);
+      const grd = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 7);
+      grd.addColorStop(0, p.glow + (a * 0.4) + ')');
+      grd.addColorStop(1, 'transparent');
+      ctx.fillStyle = grd;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.size * 7, 0, Math.PI*2); ctx.fill();
+      ctx.globalAlpha = a;
+      ctx.fillStyle   = p.color;
+      ctx.shadowColor = p.color;
+      ctx.shadowBlur  = 8;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
+      ctx.shadowBlur  = 0;
+      ctx.globalAlpha = 1;
+    });
+  }
+
+  // ── STARFIELD + COPPER ────────────────────────────────────────────────────
+  function initStars(W, H) {
+    stars = Array.from({length:60}, () => ({
+      x: Math.random()*W, y: Math.random()*H,
+      r: Math.random()*0.7+0.15,
+      speed: Math.random()*0.35+0.06,
+      c: Math.random()>0.55 ? '#00eeff' : Math.random()>0.5 ? '#cc00ff' : '#ffffff'
+    }));
+  }
+
+  function animStars() {
+    if(!sCanvas) return;
+    const ctx = sCanvas.getContext('2d');
+    const W = sCanvas.width, H = sCanvas.height;
+    ctx.clearRect(0,0,W,H);
+    copperT += 0.05;
+    for(let y=0; y<H; y++) {
+      const v = (Math.sin(y*0.2+copperT) + Math.sin(y*0.08-copperT*1.4)) * 0.5;
+      ctx.fillStyle = `rgba(${Math.floor(v*60+20)},0,${Math.floor(v*120+50)},0.55)`;
+      ctx.fillRect(0,y,W,1);
+    }
+    stars.forEach(s => {
+      s.x -= s.speed;
+      if(s.x < 0) { s.x = W; s.y = Math.random()*H; }
+      ctx.globalAlpha = 0.18 + Math.sin(Date.now()*0.0009+s.x)*0.07;
+      ctx.fillStyle = s.c;
+      ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2); ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+    sRAF = requestAnimationFrame(animStars);
+  }
+
+  // ── POST-FX ───────────────────────────────────────────────────────────────
+  let fxCanvas  = null;
+  let fxT       = 0;
+  let glitchFrames = 0; // countdown: >0 means apply glitch this frame
+
+  function ensureFX(W, H) {
+    if(!fxCanvas || fxCanvas.width !== W || fxCanvas.height !== H) {
+      fxCanvas = document.createElement('canvas');
+      fxCanvas.width = W; fxCanvas.height = H;
+    }
+  }
+
+  function applyPostFX(dst, W, H) {
+    const ctx = dst;
+    fxT += 0.016;
+
+    // ── 1. BLOOM ──────────────────────────────────────────────────────────
+    // Copy scene to offscreen, blur it, composite back with 'screen' blend
+    const bloom = document.createElement('canvas');
+    bloom.width = W; bloom.height = H;
+    const bx = bloom.getContext('2d');
+    bx.drawImage(fxCanvas, 0, 0);
+    // stack multiple blur passes at decreasing opacity for wide soft bloom
+    ctx.save();
+    ctx.globalCompositeOperation = 'screen';
+    [[12, 0.18],[6, 0.14],[3, 0.10]].forEach(([blur, alpha]) => {
+      ctx.filter = `blur(${blur}px)`;
+      ctx.globalAlpha = alpha;
+      ctx.drawImage(bloom, 0, 0);
+    });
+    ctx.filter = 'none';
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.restore();
+
+    // ── 2. CHROMATIC ABERRATION ───────────────────────────────────────────
+    // Draw scene 3x with RGB channels offset slightly
+    const shift = 2.2 + Math.sin(fxT * 0.7) * 0.8; // subtle breathe
+    ctx.save();
+    ctx.globalCompositeOperation = 'screen';
+
+    // Red channel — shift left
+    const rCv = document.createElement('canvas');
+    rCv.width = W; rCv.height = H;
+    const rx = rCv.getContext('2d');
+    rx.drawImage(fxCanvas, 0, 0);
+    const rImg = rx.getImageData(0, 0, W, H);
+    // zero out G and B
+    for(let i=0; i<rImg.data.length; i+=4) { rImg.data[i+1]=0; rImg.data[i+2]=0; rImg.data[i+3]=Math.floor(rImg.data[i+3]*0.55); }
+    rx.putImageData(rImg, 0, 0);
+    ctx.globalAlpha = 0.55;
+    ctx.drawImage(rCv, -shift, 0);
+
+    // Blue channel — shift right
+    const bCv = document.createElement('canvas');
+    bCv.width = W; bCv.height = H;
+    const bx2 = bCv.getContext('2d');
+    bx2.drawImage(fxCanvas, 0, 0);
+    const bImg = bx2.getImageData(0, 0, W, H);
+    for(let i=0; i<bImg.data.length; i+=4) { bImg.data[i]=0; bImg.data[i+1]=0; bImg.data[i+3]=Math.floor(bImg.data[i+3]*0.55); }
+    bx2.putImageData(bImg, 0, 0);
+    ctx.drawImage(bCv, shift, 0);
+
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.restore();
+
+    // ── 3. MOVING CRT SCANLINES ───────────────────────────────────────────
+    const scanOffset = (fxT * 40) % 4;
+    ctx.save();
+    for(let y = scanOffset; y < H; y += 4) {
+      ctx.fillStyle = 'rgba(0,0,0,0.18)';
+      ctx.fillRect(0, y, W, 1);
+    }
+    // subtle horizontal interference line that scrolls down
+    const iLine = ((fxT * 60) % H);
+    const ig = ctx.createLinearGradient(0, iLine-2, 0, iLine+2);
+    ig.addColorStop(0,   'transparent');
+    ig.addColorStop(0.5, 'rgba(180,230,255,0.06)');
+    ig.addColorStop(1,   'transparent');
+    ctx.fillStyle = ig;
+    ctx.fillRect(0, iLine-2, W, 4);
+    ctx.restore();
+
+    // ── 4. VIGNETTE ───────────────────────────────────────────────────────
+    const vg = ctx.createRadialGradient(W/2, H/2, H*0.25, W/2, H/2, H*0.85);
+    vg.addColorStop(0, 'transparent');
+    vg.addColorStop(1, 'rgba(0,0,0,0.65)');
+    ctx.fillStyle = vg;
+    ctx.fillRect(0, 0, W, H);
+
+    // ── 5. SUBTLE NOISE FLICKER ───────────────────────────────────────────
+    if(Math.random() < 0.04) {
+      ctx.fillStyle = `rgba(255,255,255,${Math.random()*0.015})`;
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    // ── 6. GLITCH — triggered on page transitions ─────────────────────────
+    if(glitchFrames > 0) {
+      glitchFrames--;
+      const numSlices = 4 + Math.floor(Math.random() * 6);
+      for(let s = 0; s < numSlices; s++) {
+        const sy     = Math.floor(Math.random() * H);
+        const sh     = 2 + Math.floor(Math.random() * 12);
+        const xShift = (Math.random() - 0.5) * 60;
+        const alpha  = 0.5 + Math.random() * 0.5;
+        // cut a horizontal slice and offset it
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.drawImage(fxCanvas, 0, sy, W, sh, xShift, sy, W, sh);
+        // optional cyan/magenta tint strip
+        ctx.globalCompositeOperation = 'screen';
+        ctx.fillStyle = Math.random() > 0.5 ? 'rgba(0,238,255,0.15)' : 'rgba(255,0,170,0.15)';
+        ctx.fillRect(0, sy, W, sh);
+        ctx.restore();
+      }
+      // occasional full-frame color shift
+      if(Math.random() < 0.3) {
+        ctx.save();
+        ctx.globalCompositeOperation = 'screen';
+        ctx.globalAlpha = 0.06;
+        ctx.fillStyle = Math.random() > 0.5 ? '#00eeff' : '#ff00aa';
+        ctx.fillRect(0, 0, W, H);
+        ctx.restore();
+      }
+    }
+  }
+
+  // ── PAGER ANIMATION ───────────────────────────────────────────────────────
+  function animPager() {
+    if(!pCanvas) return;
+    const W = pCanvas.width;
+    const H = pCanvas.height;
+
+    ensureFX(W, H);
+    const offCtx = fxCanvas.getContext('2d');
+
+    // render scene to offscreen canvas
+    drawParticles(offCtx, W, H);
+
+    const page   = PAGES[pageIdx % PAGES.length];
+    const isImagePage = page.length === 1 && page[0].t === 'image';
+    const totalH = isImagePage ? 0 : page.length * LINE_H;
+    const baseY  = H/2 - totalH/2 + LINE_H/2;
+
+    phaseT++;
+    pulseT += 0.03;
+
+    if(phase === 'idle') { phase = 'in'; phaseT = 0; }
+
+    let xOff = 0;
+    if(phase === 'in') {
+      const progress = easeOut(phaseT / FLY_FRAMES);
+      xOff = (1 - progress) * (W + 100);
+      if(phaseT >= FLY_FRAMES) { phase = 'hold'; phaseT = 0; xOff = 0; }
+    } else if(phase === 'hold') {
+      xOff = 0;
+      if(phaseT >= HOLD_FRAMES) { phase = 'out'; phaseT = 0; }
+    } else if(phase === 'out') {
+      const progress = easeIn(phaseT / FLYOUT_FRAMES);
+      xOff = -progress * (W + 100);
+      if(phaseT >= FLYOUT_FRAMES) {
+        pageIdx = (pageIdx + 1) % PAGES.length;
+        phase = 'in'; phaseT = 0; xOff = W + 100;
+        glitchFrames = 6; // fire 6 frames of glitch on transition
+      }
+    }
+
+    if(isImagePage) {
+      // ── IMAGE PAGE — draw centered, fit to canvas, with fly-in offset ──
+      const imgObj = _pagerImages[page[0].src];
+      if(imgObj && imgObj.complete && imgObj.naturalWidth > 0) {
+        const maxW = W * 0.88;
+        const maxH = H * 0.88;
+        const scale = Math.min(maxW / imgObj.naturalWidth, maxH / imgObj.naturalHeight);
+        const dw = imgObj.naturalWidth  * scale;
+        const dh = imgObj.naturalHeight * scale;
+        const dx = (W - dw) / 2 + xOff;
+        const dy = (H - dh) / 2;
+        offCtx.save();
+        offCtx.globalAlpha = phase === 'hold' ? 1 : Math.max(0, 1 - Math.abs(xOff) / (W + 100));
+        offCtx.drawImage(imgObj, dx, dy, dw, dh);
+        offCtx.restore();
+      }
+    } else {
+    page.forEach((line, i) => {
+      const stagger = (phase === 'in') ? xOff * (1 + i * 0.03) : xOff;
+
+      // Flip effect during fly-in — each line scales from 0 to 1 on X
+      // staggered so earlier lines flip first
+      let flipScale = 1;
+      if(phase === 'in') {
+        const flipProgress = Math.min(1, Math.max(0, (phaseT - i * 3) / 18));
+        flipScale = easeOut(flipProgress);
+      }
+
+      offCtx.save();
+      offCtx.translate(stagger + W/2, baseY + i*LINE_H);
+      offCtx.scale(flipScale, 1);
+      offCtx.translate(-W/2, 0);
+      drawLine(offCtx, line, W, 0);
+      offCtx.restore();
+    });
+    }
+
+    // blit offscreen to screen, then apply post-fx on top
+    const ctx = pCanvas.getContext('2d');
+    ctx.clearRect(0, 0, W, H);
+    ctx.drawImage(fxCanvas, 0, 0);
+    applyPostFX(ctx, W, H);
+
+    pRAF = requestAnimationFrame(animPager);
+  }
+
+  // ── START / STOP ──────────────────────────────────────────────────────────
+  function startDemo() {
+    pCanvas = document.getElementById('demoScroller');
+    sCanvas = document.getElementById('demoStars');
+    if(!pCanvas || !sCanvas) return;
+
+    pCanvas.width  = pCanvas.offsetWidth  || 940;
+    pCanvas.height = pCanvas.offsetHeight || 400;
+    sCanvas.width  = sCanvas.offsetWidth  || 940;
+    sCanvas.height = sCanvas.offsetHeight || 48;
+
+    if(!stars) initStars(sCanvas.width, sCanvas.height);
+    if(!sRAF) animStars();
+    if(!pRAF) { phase='idle'; phaseT=0; pageIdx=0; animPager(); }
+  }
+
+  function stopDemo() {
+    if(sRAF) { cancelAnimationFrame(sRAF); sRAF=null; }
+    if(pRAF) { cancelAnimationFrame(pRAF); pRAF=null; }
+    phase = 'idle';
+  }
+
+  const origSwitch = window.switchTab;
+  window.switchTab = function(tab) {
+    origSwitch(tab);
+    if(tab === 'about') setTimeout(startDemo, 60);
+    else stopDemo();
+  };
+
+})();
+window._showUpdateBanner = function(version, url, filename, size) {
+  const banner = document.getElementById('updateBanner');
+  document.getElementById('updateVersion').textContent = `v${version}  (${(size/1048576).toFixed(1)} MB)`;
+  banner.style.display = 'flex';
+  document.getElementById('btnUpdate').onclick = () => startUpdate(url, filename);
+};
+
+window._updateProgress = function(pct) {
+  document.getElementById('updatePct').textContent = pct;
+};
+
+async function startUpdate(url, filename) {
+  document.getElementById('btnUpdate').style.display = 'none';
+  document.getElementById('updateProgress').style.display = 'block';
+  document.getElementById('updateVersion').textContent = 'Download läuft — App startet danach neu...';
+  if(window._ipc && window._ipc.downloadUpdate) {
+    const result = await window._ipc.downloadUpdate({ url, filename });
+    if(!result.success) {
+      document.getElementById('updateProgress').style.display = 'none';
+      document.getElementById('updateVersion').textContent = `Fehler: ${result.error}`;
+      document.getElementById('btnUpdate').style.display = '';
+    }
+  }
+};
 </script>
 <!-- CONFLICT DIALOG -->
 <div id="cfOverlay" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.85);backdrop-filter:blur(4px);align-items:center;justify-content:center;display:none">

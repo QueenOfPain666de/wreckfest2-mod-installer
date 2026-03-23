@@ -16,7 +16,7 @@
     "directories": { "output": "dist" },
     "files": [
       "main.js", "preload.js", "index.html",
-      "bg.jpg", "Midnight_Highway_Circuit.mp3", "icon.png"
+      "bg.jpg", "wf2logo.png", "qop_image.png", "Midnight_Highway_Circuit.mp3", "icon.png"
     ],
     "win": {
       "target": [{ "target": "portable", "arch": ["x64"] }],

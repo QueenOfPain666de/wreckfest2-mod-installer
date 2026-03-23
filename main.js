@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, screen } = require('electron');
 const path = require('path');
 const http = require('http');
 const fs = require('fs');
@@ -302,12 +302,14 @@ function startBackend() {
       '/': 'index.html',
       '/index.html': 'index.html',
       '/bg.jpg': 'bg.jpg',
+      '/wf2logo.png': 'wf2logo.png',
+      '/qop_image.png': 'qop_image.png',
       '/Midnight_Highway_Circuit.mp3': 'Midnight_Highway_Circuit.mp3',
     };
     const staticFile = staticMap[url.pathname];
     if (staticFile) {
       const filePath = path.join(__dirname, staticFile);
-      const mimeTypes = { '.html': 'text/html', '.jpg': 'image/jpeg', '.mp3': 'audio/mpeg' };
+      const mimeTypes = { '.html': 'text/html', '.jpg': 'image/jpeg', '.png': 'image/png', '.mp3': 'audio/mpeg' };
       const ext = path.extname(filePath);
       try {
         const data = fs.readFileSync(filePath);
@@ -332,14 +334,16 @@ function startBackend() {
 let mainWindow;
 
 function createWindow() {
+  const { workAreaSize } = screen.getPrimaryDisplay();
+  const winW = Math.min(1344, Math.round(workAreaSize.width  * 0.92));
+  const winH = Math.min(890,  Math.round(workAreaSize.height * 0.94));
+
   mainWindow = new BrowserWindow({
-    width: 1280,
-    height: 820,
-    minWidth: 1280,
-    minHeight: 820,
-    maxWidth: 1280,
-    maxHeight: 820,
-    resizable: false,
+    width: winW,
+    height: winH,
+    minWidth: 900,
+    minHeight: 720,
+    resizable: true,
     title: 'WRECKFEST 2 — MOD INSTALLER',
     backgroundColor: '#02000a',
     icon: path.join(__dirname, 'icon.png'),
@@ -381,6 +385,9 @@ function createWindow() {
         // push app content down
         const app = document.getElementById('app');
         if (app) app.style.paddingTop = '32px';
+        // Inject version into about tab
+        const vEl = document.getElementById('aboutVersion');
+        if (vEl) vEl.textContent = 'v' + ${JSON.stringify(require('./package.json').version)};
       })();
     `);
   });
@@ -406,8 +413,9 @@ ipcMain.handle('browse-folder', async () => {
 
 app.whenReady().then(() => {
   startBackend();
-  // Small delay so backend is ready before window loads
   setTimeout(createWindow, 150);
+  // Check for updates a few seconds after start so window is ready
+  setTimeout(checkForUpdate, 4000);
 });
 
 app.on('window-all-closed', () => {
@@ -417,4 +425,128 @@ app.on('window-all-closed', () => {
 
 app.on('activate', () => {
   if (mainWindow === null) createWindow();
+});
+
+// ── AUTO-UPDATE ───────────────────────────────────────────────────────────────
+
+const https = require('https');
+const CURRENT_VERSION = require('./package.json').version;
+const GITHUB_REPO     = 'QueenOfPain666de/wreckfest2-mod-installer';
+const GITHUB_API      = `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`;
+
+function compareVersions(a, b) {
+  // returns true if b is newer than a
+  const pa = a.replace(/^v/, '').split('.').map(Number);
+  const pb = b.replace(/^v/, '').split('.').map(Number);
+  for (let i = 0; i < 3; i++) {
+    if ((pb[i] || 0) > (pa[i] || 0)) return true;
+    if ((pb[i] || 0) < (pa[i] || 0)) return false;
+  }
+  return false;
+}
+
+function httpsGet(url, redirects = 5) {
+  return new Promise((resolve, reject) => {
+    const req = https.get(url, {
+      headers: { 'User-Agent': `WF2ModInstaller/${CURRENT_VERSION}` }
+    }, res => {
+      if ([301, 302, 303, 307, 308].includes(res.statusCode) && res.headers.location && redirects > 0) {
+        resolve(httpsGet(res.headers.location, redirects - 1));
+        return;
+      }
+      let data = '';
+      res.on('data', d => data += d);
+      res.on('end', () => resolve({ statusCode: res.statusCode, body: data }));
+    });
+    req.on('error', reject);
+    req.setTimeout(8000, () => { req.destroy(); reject(new Error('timeout')); });
+  });
+}
+
+function downloadFile(url, destPath, onProgress) {
+  return new Promise((resolve, reject) => {
+    const followRedirect = (u, hops = 5) => {
+      https.get(u, { headers: { 'User-Agent': `WF2ModInstaller/${CURRENT_VERSION}` } }, res => {
+        if ([301, 302, 303, 307, 308].includes(res.statusCode) && res.headers.location && hops > 0) {
+          followRedirect(res.headers.location, hops - 1);
+          return;
+        }
+        const total = parseInt(res.headers['content-length'] || '0');
+        let received = 0;
+        const out = fs.createWriteStream(destPath);
+        res.on('data', chunk => {
+          received += chunk.length;
+          out.write(chunk);
+          if (total > 0 && onProgress) onProgress(Math.round(received / total * 100));
+        });
+        res.on('end', () => { out.end(); resolve(); });
+        res.on('error', err => { out.destroy(); reject(err); });
+      }).on('error', reject);
+    };
+    followRedirect(url);
+  });
+}
+
+async function checkForUpdate() {
+  if (!mainWindow) return;
+  try {
+    const { statusCode, body } = await httpsGet(GITHUB_API);
+    if (statusCode !== 200) return;
+    const release = JSON.parse(body);
+    const latest = release.tag_name || release.name || '';
+    if (!latest || !compareVersions(CURRENT_VERSION, latest)) return;
+
+    // Find the portable .exe asset
+    const asset = (release.assets || []).find(a =>
+      a.name.toLowerCase().endsWith('.exe') && !a.name.toLowerCase().includes('setup')
+    );
+    if (!asset) return;
+
+    // Notify the renderer
+    mainWindow.webContents.executeJavaScript(`
+      window._showUpdateBanner && window._showUpdateBanner(
+        ${JSON.stringify(latest)},
+        ${JSON.stringify(asset.browser_download_url)},
+        ${JSON.stringify(asset.name)},
+        ${asset.size}
+      );
+    `);
+  } catch (e) {
+    console.log('Update check failed:', e.message);
+  }
+}
+
+// IPC: download update + relaunch
+ipcMain.handle('download-update', async (event, { url, filename }) => {
+  const tmpPath = path.join(os.tmpdir(), filename);
+  try {
+    await downloadFile(url, tmpPath, pct => {
+      mainWindow && mainWindow.webContents.executeJavaScript(
+        `window._updateProgress && window._updateProgress(${pct})`
+      );
+    });
+
+    // On Windows: write a small batch file that waits, replaces exe, relaunches
+    if (process.platform === 'win32') {
+      const currentExe = process.execPath;
+      const bat = path.join(os.tmpdir(), 'wf2_update.bat');
+      fs.writeFileSync(bat, `
+@echo off
+timeout /t 2 /nobreak >nul
+copy /y "${tmpPath}" "${currentExe}"
+start "" "${currentExe}"
+del "%~f0"
+`.trim());
+      exec(`start "" /b "${bat}"`);
+      app.quit();
+    } else {
+      // Linux: replace AppImage
+      const currentExe = process.execPath;
+      exec(`chmod +x "${tmpPath}" && sleep 2 && cp "${tmpPath}" "${currentExe}" && "${currentExe}" &`);
+      app.quit();
+    }
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
 });
